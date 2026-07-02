@@ -21,6 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Bundle font install helpers
+        run: |
+          brew install cabextract
+          cp "$(brew --prefix cabextract)/bin/cabextract" GW2onMac/Resources/cabextract
+          chmod +x GW2onMac/Resources/cabextract
+
       - name: Build GW2onMac (Release)
         run: |
           DERIVED="$RUNNER_TEMP/DerivedData"

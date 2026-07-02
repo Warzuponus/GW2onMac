@@ -15,6 +15,7 @@
 		A10000010000000000000006 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000008 /* HomeView.swift */; };
 		A10000010000000000000007 /* install-gptk.sh in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000009 /* install-gptk.sh */; };
 		A10000010000000000000009 /* winetricks in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000011 /* winetricks */; };
+		A10000010000000000000010 /* cabextract in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000012 /* cabextract */; };
 		A10000010000000000000008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000010 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -28,6 +29,7 @@
 		A20000010000000000000008 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		A20000010000000000000009 /* install-gptk.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "install-gptk.sh"; sourceTree = "<group>"; };
 		A20000010000000000000011 /* winetricks */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = winetricks; sourceTree = "<group>"; };
+		A20000010000000000000012 /* cabextract */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = cabextract; sourceTree = "<group>"; };
 		A20000010000000000000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A30000010000000000000001 /* GW2onMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GW2onMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000010000000000000005 /* GW2Kit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = GW2Kit; sourceTree = "<group>"; };
@@ -75,6 +77,7 @@
 			children = (
 				A20000010000000000000009 /* install-gptk.sh */,
 				A20000010000000000000011 /* winetricks */,
+				A20000010000000000000012 /* cabextract */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -168,6 +171,7 @@
 			files = (
 				A10000010000000000000007 /* install-gptk.sh in Resources */,
 				A10000010000000000000009 /* winetricks in Resources */,
+				A10000010000000000000010 /* cabextract in Resources */,
 				A10000010000000000000008 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -224,7 +228,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.1.7;
+				MARKETING_VERSION = 0.1.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.gw2onmac.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -249,7 +253,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.1.7;
+				MARKETING_VERSION = 0.1.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.gw2onmac.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
