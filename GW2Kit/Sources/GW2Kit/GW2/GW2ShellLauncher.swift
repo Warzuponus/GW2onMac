@@ -33,7 +33,7 @@ public enum GW2ShellLauncher {
 
         let bundleID = applicationSupportBundleID(for: bottle)
 
-        var env = ProcessInfo.processInfo.environment
+        var env = minimalLaunchEnvironment()
         env["GW2ONMAC_BUNDLE_ID"] = bundleID
         env["WINEPREFIX"] = bottle.url.path
 
@@ -78,5 +78,22 @@ public enum GW2ShellLauncher {
             return AppPaths.legacyBundleIdentifier
         }
         return AppPaths.bundleIdentifier
+    }
+
+    /// Avoid inheriting GUI-app or shell env (e.g. leaked CrossOver CX_* vars).
+    private static func minimalLaunchEnvironment() -> [String: String] {
+        var env: [String: String] = [
+            "HOME": NSHomeDirectory(),
+            "USER": NSUserName(),
+            "TMPDIR": NSTemporaryDirectory(),
+            "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
+            "SHELL": "/bin/bash"
+        ]
+        for key in ["LANG", "LC_ALL"] {
+            if let value = ProcessInfo.processInfo.environment[key], !value.isEmpty {
+                env[key] = value
+            }
+        }
+        return env
     }
 }

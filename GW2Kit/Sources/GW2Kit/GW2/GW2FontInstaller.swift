@@ -95,16 +95,26 @@ public enum GW2FontInstaller {
             return false
         }
 
-        let fontFiles = (try? FileManager.default.contentsOfDirectory(atPath: fontsDir.path))?
-            .filter { $0.lowercased().hasSuffix(".ttf") || $0.lowercased().hasSuffix(".ttc") }
-            ?? []
+        let fontFiles = Set(
+            (try? FileManager.default.contentsOfDirectory(atPath: fontsDir.path))?
+                .map { $0.lowercased() } ?? []
+        )
 
-        // Prefixes that already ran GW2 successfully ship plenty of fonts from Wine/GW2.
-        if fontFiles.count >= 10 {
-            return true
-        }
+        // Do not use a font count heuristic — stock Wine ships many fonts but not CEF UI fonts.
+        let required = ["arial.ttf", "tahoma.ttf"]
+        return required.allSatisfy { fontFiles.contains($0) }
+    }
 
-        return fontFiles.contains { $0.lowercased() == "arial.ttf" }
+    /// Remove the font marker so the next repair/play reinstalls corefonts + tahoma.
+    public static func resetFontInstallMarker(in bottle: Bottle) {
+        let marker = bottle.url.appending(path: markerName)
+        try? FileManager.default.removeItem(at: marker)
+    }
+
+    /// Force corefonts + tahoma even when a partial font set exists.
+    public static func reinstallFonts(into bottle: Bottle) async throws {
+        resetFontInstallMarker(in: bottle)
+        try await installFonts(into: bottle)
     }
 
     /// Best-effort font install. Returns a user-visible warning when install fails or is skipped.

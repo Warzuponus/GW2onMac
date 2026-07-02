@@ -54,7 +54,21 @@ export DYLD_LIBRARY_PATH="$LIB/lib/native:/usr/local/lib:/usr/local/opt/libpng/l
 [[ -x "$WINE" ]] || { echo "Wine runtime not installed at $WINE" >&2; exit 1; }
 [[ -f "$GW2" ]] || { echo "Gw2-64.exe not found at $GW2" >&2; exit 1; }
 
-wine() { arch -x86_64 env DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH" "$WINE" "$@"; }
+wine() {
+  arch -x86_64 env -i \
+    HOME="${HOME:?}" \
+    USER="${USER:-$(id -un)}" \
+    TMPDIR="${TMPDIR:-/tmp}" \
+    WINEPREFIX="$WINEPREFIX" \
+    WINEARCH=win64 \
+    WINEDEBUG=-all \
+    WINEMSYNC=1 \
+    WINEESYNC=1 \
+    ROSETTA_ADVERTISE_AVX=1 \
+    PATH="$PATH" \
+    DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH" \
+    "$WINE" "$@"
+}
 
 echo "Launching GW2 (bundle=$BUNDLE_ID)"
 if [[ -n "$ARGS" ]]; then

@@ -113,17 +113,22 @@ struct HomeView: View {
             guard let bottle = appState.bottleManager.bottle else { return }
 
             await appState.bottleManager.applyPerformanceTuningIfNeeded()
-            let fontWarning = await GW2FontInstaller.installFontsIfNeeded(into: bottle)
 
+            var messages: [String] = []
             if GW2Repair.clearLauncherLock(in: bottle) {
-                statusMessage = "Removed stale lock file."
-            } else {
-                statusMessage = "Display settings refreshed."
+                messages.append("Removed stale lock file.")
             }
 
-            if let fontWarning {
-                statusMessage += " Font install skipped: \(fontWarning)"
+            do {
+                try await GW2FontInstaller.reinstallFonts(into: bottle)
+                messages.append("Reinstalled launcher fonts (corefonts + tahoma).")
+            } catch {
+                messages.append("Font reinstall failed: \(error.localizedDescription)")
             }
+
+            statusMessage = messages.isEmpty
+                ? "Display settings refreshed."
+                : messages.joined(separator: " ")
         }
     }
 
