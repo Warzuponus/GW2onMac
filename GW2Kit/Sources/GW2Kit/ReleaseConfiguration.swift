@@ -9,6 +9,9 @@ import Foundation
 
 /// GitHub release URLs for the self-built Wine runtime.
 public enum ReleaseConfiguration {
+    /// Wine runtime release tag on GitHub (not the app `v*` tag). Bump when publishing `runtime-v*`.
+    public static let runtimeReleaseTag = "runtime-v0.1.1"
+
     /// Override with `GW2ONMAC_GITHUB_REPO` (e.g. `yourname/GW2onMac`).
     public static var githubRepository: String {
         if let repo = ProcessInfo.processInfo.environment["GW2ONMAC_GITHUB_REPO"], !repo.isEmpty {
@@ -23,7 +26,7 @@ public enum ReleaseConfiguration {
            let url = URL(string: override) {
             return url
         }
-        return URL(string: "https://github.com/\(githubRepository)/releases/latest/download/Libraries.tar.gz")!
+        return URL(string: "https://github.com/\(githubRepository)/releases/download/\(runtimeReleaseTag)/Libraries.tar.gz")!
     }
 
     public static var versionPlistURL: URL {
@@ -32,7 +35,7 @@ public enum ReleaseConfiguration {
            let url = URL(string: override) {
             return url
         }
-        return URL(string: "https://github.com/\(githubRepository)/releases/latest/download/GW2onMacWineVersion.plist")!
+        return URL(string: "https://github.com/\(githubRepository)/releases/download/\(runtimeReleaseTag)/GW2onMacWineVersion.plist")!
     }
 
     /// ArenaNet Gw2Setup-64.exe download URLs (tried in order). Override with `GW2ONMAC_GW2_SETUP_URL`.
