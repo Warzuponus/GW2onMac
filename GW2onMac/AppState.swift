@@ -32,18 +32,27 @@ enum GPTKInstallPhase: Equatable {
     case failed(String)
 }
 
+enum RosettaInstallPhase: Equatable {
+    case idle
+    case installing
+    case complete
+    case failed(String)
+}
+
 @MainActor
 final class AppState: ObservableObject {
     @Published var bottleManager = GW2BottleManager.shared
     @Published var runtimeInstallPhase: RuntimeInstallPhase = .idle
     @Published var gw2InstallPhase: GW2InstallPhase = .idle
     @Published var gptkInstallPhase: GPTKInstallPhase = .idle
+    @Published var rosettaInstallPhase: RosettaInstallPhase = .idle
     @Published var runtimeUpdateAvailable: SemanticVersion?
     /// When true, show the setup wizard even if the user could use the launcher.
     @Published var showSetupWizard = false
 
     var isRuntimeInstalled: Bool { WineRuntimeInstaller.isRuntimeInstalled() }
     var isD3DMetalAvailable: Bool { WineRuntimeInstaller.isD3DMetalAvailable() }
+    var isRosettaInstalled: Bool { Rosetta2.isInstalled() }
     var hasPrefix: Bool { bottleManager.bottle?.isAvailable == true }
     var isGameInstalled: Bool {
         guard let bottle = bottleManager.bottle else { return false }
@@ -67,6 +76,13 @@ final class AppState: ObservableObject {
     var isGPTKInstallBusy: Bool {
         switch gptkInstallPhase {
         case .working: true
+        default: false
+        }
+    }
+
+    var isRosettaInstallBusy: Bool {
+        switch rosettaInstallPhase {
+        case .installing: true
         default: false
         }
     }
@@ -107,6 +123,13 @@ final class AppState: ObservableObject {
     func downloadAndInstallRuntime() async {
         guard !isRuntimeBusy else { return }
 
+        do {
+            try await ensureRosettaInstalled()
+        } catch {
+            runtimeInstallPhase = .failed(error.localizedDescription)
+            return
+        }
+
         runtimeInstallPhase = .downloading(0)
         do {
             try await WineRuntimeInstaller.downloadAndInstallRuntime { [weak self] fraction in
@@ -127,15 +150,33 @@ final class AppState: ObservableObject {
     }
 
     func installRosetta() async {
+        guard !isRosettaInstallBusy else { return }
+        rosettaInstallPhase = .installing
         do {
-            _ = try await Rosetta2.installRosetta()
+            try await Rosetta2.ensureInstalled()
+            rosettaInstallPhase = .complete
             refresh()
         } catch {
-            runtimeInstallPhase = .failed("Rosetta install failed: \(error.localizedDescription)")
+            rosettaInstallPhase = .failed(error.localizedDescription)
         }
     }
 
+    /// Install Rosetta 2 when missing. Called automatically before Wine operations.
+    func ensureRosettaInstalled() async throws {
+        guard !Rosetta2.isInstalled() else { return }
+        rosettaInstallPhase = .installing
+        defer {
+            if case .installing = rosettaInstallPhase {
+                rosettaInstallPhase = .idle
+            }
+        }
+        try await Rosetta2.ensureInstalled()
+        rosettaInstallPhase = .complete
+        refresh()
+    }
+
     func createPrefix() async throws {
+        try await ensureRosettaInstalled()
         guard isRuntimeInstalled else {
             throw GW2BottleError.runtimeMissing
         }
@@ -150,6 +191,13 @@ final class AppState: ObservableObject {
         guard !isGW2InstallBusy else { return }
         guard let bottle = bottleManager.bottle else {
             gw2InstallPhase = .failed(GW2SetupError.prefixMissing.localizedDescription)
+            return
+        }
+
+        do {
+            try await ensureRosettaInstalled()
+        } catch {
+            gw2InstallPhase = .failed(error.localizedDescription)
             return
         }
 
@@ -182,6 +230,13 @@ final class AppState: ObservableObject {
             return
         }
 
+        do {
+            try await ensureRosettaInstalled()
+        } catch {
+            gw2InstallPhase = .failed(error.localizedDescription)
+            return
+        }
+
         gw2InstallPhase = .importing
         do {
             let accessed = folder.startAccessingSecurityScopedResource()
@@ -206,6 +261,10 @@ final class AppState: ObservableObject {
 
     func resetGPTKInstallPhase() {
         gptkInstallPhase = .idle
+    }
+
+    func resetRosettaInstallPhase() {
+        rosettaInstallPhase = .idle
     }
 
     func installGPTK(from source: URL? = nil) async {

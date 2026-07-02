@@ -90,21 +90,54 @@ struct SetupWizardView: View {
     private var rosettaStep: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
-                stepIcon(ok: Rosetta2.isRosettaInstalled)
+                stepIcon(ok: appState.isRosettaInstalled)
                 Text("Rosetta 2")
                     .font(.headline)
                 Spacer()
-                if !Rosetta2.isRosettaInstalled {
+                if !appState.isRosettaInstalled {
                     Button("Install Rosetta") {
                         Task { await appState.installRosetta() }
                     }
-                    .disabled(appState.isRuntimeBusy)
+                    .disabled(appState.isRuntimeBusy || appState.isRosettaInstallBusy)
                 }
             }
-            Text("Required to run Wine (x86_64) on Apple Silicon.")
+
+            rosettaInstallProgress
+
+            Text(rosettaDetail)
                 .font(.callout)
                 .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
+    }
+
+    @ViewBuilder
+    private var rosettaInstallProgress: some View {
+        switch appState.rosettaInstallPhase {
+        case .installing:
+            ProgressView("Installing Rosetta 2…")
+        case .failed(let message):
+            VStack(alignment: .leading, spacing: 4) {
+                Text(message)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button("Dismiss") { appState.resetRosettaInstallPhase() }
+                    .font(.caption)
+            }
+        default:
+            EmptyView()
+        }
+    }
+
+    private var rosettaDetail: String {
+        if appState.isRosettaInstalled {
+            return "Rosetta 2 is installed. GW2onMac’s Wine runtime runs as x86_64 code on Apple Silicon."
+        }
+        return """
+        GW2onMac’s Wine runtime is built for Intel (x86_64) and runs under Rosetta 2 on M-series Macs. \
+        Click Install Rosetta, or it will install automatically when you download the runtime or create the prefix.
+        """
     }
 
     private var runtimeStep: some View {

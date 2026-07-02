@@ -104,11 +104,13 @@ See [README.md](../README.md#for-developers).
 
 ## Step 2 — Install Rosetta 2
 
-Wine runs as x86_64 code under Rosetta on Apple Silicon.
+GW2onMac’s Wine runtime is built as **x86_64** (Intel) code — the same approach used by CrossOver and most macOS Wine builds with D3DMetal support. On Apple Silicon, that means Wine runs under **Rosetta 2**, Apple’s one-time system translator.
 
-1. Open **GW2onMac**.
-2. In the setup wizard, find **Rosetta 2**.
-3. Click **Install Rosetta** if it is not already installed.
+Rosetta is **not related to your Guild Wars 2 install** — even if you import an existing GW2 folder, Wine still needs Rosetta to run `wine64` and `Gw2-64.exe`.
+
+1. In the setup wizard, find **Rosetta 2**.
+2. Click **Install Rosetta** if it is not already installed — or skip this step; GW2onMac **installs Rosetta automatically** when you download the runtime, create the prefix, or install/import GW2.
+3. macOS may ask for your password. Wait until the step shows a green checkmark.
 
 Or install manually in Terminal:
 
