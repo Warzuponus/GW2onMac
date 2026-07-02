@@ -24,7 +24,7 @@ public enum GW2ShellLauncherError: LocalizedError {
 
 public enum GW2ShellLauncher {
     /// Launch Guild Wars 2 using the bundled shell script (matches `./Scripts/launch-gw2.sh`).
-    public static func launch(bottle: Bottle, arguments: String) throws {
+    public static func launch(bottle: Bottle, executableURL: URL? = nil, arguments: String) throws {
         GW2RuntimePreparer.ensureNativeDylibsBundled()
 
         guard let script = launchScriptURL() else {
@@ -36,6 +36,9 @@ public enum GW2ShellLauncher {
         var env = minimalLaunchEnvironment()
         env["GW2ONMAC_BUNDLE_ID"] = bundleID
         env["WINEPREFIX"] = bottle.url.path
+        if let executableURL {
+            env["GW2ONMAC_EXECUTABLE"] = executableURL.path(percentEncoded: false)
+        }
 
         var args = [script.path(percentEncoded: false)]
         if !arguments.isEmpty {

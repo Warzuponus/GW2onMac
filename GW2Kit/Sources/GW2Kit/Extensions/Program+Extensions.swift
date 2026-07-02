@@ -14,7 +14,7 @@ extension Program {
     public func run() {
         if NSEvent.modifierFlags.contains(.shift) {
             runInTerminal()
-        } else if url.lastPathComponent == GW2Profile.launcherExecutable {
+        } else if url.lastPathComponent == GW2Profile.launcherExecutable || url.lastPathComponent == GW2Profile.setupExecutable {
             runViaShellScript()
         } else {
             runInWine()
@@ -28,6 +28,7 @@ extension Program {
             do {
                 try GW2ShellLauncher.launch(
                     bottle: self.bottle,
+                    executableURL: self.url,
                     arguments: arguments
                 )
             } catch {

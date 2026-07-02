@@ -10,7 +10,7 @@ import Foundation
 /// GitHub release URLs for the self-built Wine runtime.
 public enum ReleaseConfiguration {
     /// Wine runtime release tag on GitHub (not the app `v*` tag). Bump when publishing `runtime-v*`.
-    public static let runtimeReleaseTag = "runtime-v0.1.1"
+    public static let runtimeReleaseTag = "runtime-v0.1.2"
 
     /// Override with `GW2ONMAC_GITHUB_REPO` (e.g. `yourname/GW2onMac`).
     public static var githubRepository: String {

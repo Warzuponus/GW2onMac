@@ -35,7 +35,7 @@ BUNDLE_ID="$(resolve_bundle_id)"
 PREFIX="${WINEPREFIX:-$HOME/Library/Containers/$BUNDLE_ID/GW2}"
 LIB="$HOME/Library/Application Support/$BUNDLE_ID/Libraries/Wine"
 WINE="$LIB/bin/wine64"
-GW2="$PREFIX/drive_c/Program Files/Guild Wars 2/Gw2-64.exe"
+GW2="${GW2ONMAC_EXECUTABLE:-$PREFIX/drive_c/Program Files/Guild Wars 2/Gw2-64.exe}"
 ARGS="${*:-}"
 
 export WINEPREFIX="$PREFIX"
@@ -52,7 +52,7 @@ fi
 export DYLD_LIBRARY_PATH="$LIB/lib/native:/usr/local/lib:/usr/local/opt/libpng/lib"
 
 [[ -x "$WINE" ]] || { echo "Wine runtime not installed at $WINE" >&2; exit 1; }
-[[ -f "$GW2" ]] || { echo "Gw2-64.exe not found at $GW2" >&2; exit 1; }
+[[ -f "$GW2" ]] || { echo "Executable not found at $GW2" >&2; exit 1; }
 
 wine() {
   arch -x86_64 env -i \
@@ -70,7 +70,7 @@ wine() {
     "$WINE" "$@"
 }
 
-echo "Launching GW2 (bundle=$BUNDLE_ID)"
+echo "Launching $(basename "$GW2") (bundle=$BUNDLE_ID)"
 if [[ -n "$ARGS" ]]; then
   wine start /unix "$GW2" $ARGS
 else
