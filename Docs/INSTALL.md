@@ -26,32 +26,38 @@ GW2onMac is **open source** but **not code-signed** with an Apple Developer cert
 
 ### How to open GW2onMac
 
-**Method 1 — Right-click Open (easiest)**
+On recent macOS versions, double-clicking or right-clicking **Open** often shows **“Apple could not verify GW2onMac is free of malware”** with **no Open button** in that dialog. That is expected. Use **System Settings** instead:
+
+**Method 1 — Privacy & Security (recommended — works on Sonoma and later)**
 
 1. Download and install from [GitHub Releases](https://github.com/Warzuponus/GW2onMac/releases) only.
 2. Open the DMG and drag **GW2onMac** to **Applications**.
-3. In **Applications**, **right-click** (or Control-click) **GW2onMac**.
-4. Choose **Open** from the menu.
-5. Click **Open** in the dialog (not Cancel).
-6. GW2onMac launches. You only need to do this once — after that, double-click works.
+3. Double-click **GW2onMac** once (or try to open it). macOS blocks it — that is fine.
+4. Open **System Settings** → **Privacy & Security**.
+5. **Scroll down** past the top sections. Near the bottom you should see a message that **GW2onMac** was prevented from running.
+6. Click **Open Anyway** (or **Allow Anyway** on some versions).
+7. Confirm **Open** when macOS asks again.
+8. GW2onMac launches. You only need to do this once — after that, double-click works.
 
-**Method 2 — System Settings**
+**Method 2 — Right-click Open (may not work on all macOS versions)**
 
-1. Try to open GW2onMac normally (double-click).
-2. macOS says the app “cannot be opened because it is from an unidentified developer.”
-3. Open **System Settings → Privacy & Security**.
-4. Scroll down — you should see a message about **GW2onMac** being blocked.
-5. Click **Open Anyway**, then confirm **Open**.
+Some older macOS versions let you bypass Gatekeeper from the dialog:
+
+1. In **Applications**, **right-click** (Control-click) **GW2onMac**.
+2. Choose **Open** from the menu (not double-click).
+3. If the dialog offers an **Open** button, click it.
+
+If you only see “Apple could not verify…” with no way to proceed, use **Method 1** above.
 
 **Method 3 — Remove quarantine (Terminal)**
 
-If the above does not work (e.g. after downloading via a browser that flagged the file):
+If Privacy & Security does not show an **Open Anyway** option (uncommon):
 
 ```bash
 xattr -dr com.apple.quarantine /Applications/GW2onMac.app
 ```
 
-Then open the app normally.
+Then try opening the app again, or repeat Method 1.
 
 ### Is it safe?
 
@@ -201,7 +207,7 @@ Run ArenaNet’s installer inside the Wine prefix using GW2onMac’s terminal mo
 | “Create Prefix” fails | Install Rosetta + D3DMetal first |
 | Game installs but Play is disabled | Click **Refresh** |
 | Very low FPS on 16 GB Mac | Lower character models, shadows, reflections in-game |
-| macOS blocks or warns about GW2onMac | Expected — see [macOS security warning](#macos-security-warning-expected) |
+| macOS blocks GW2onMac (“could not verify”) | Expected — **System Settings → Privacy & Security**, scroll down, **Open Anyway** |
 
 ---
 

@@ -12,7 +12,7 @@ The notes below are only for maintainers who choose to sign builds locally or in
 
 | Build type | User experience |
 |------------|-----------------|
-| Unsigned (current) | Gatekeeper warning on first launch — bypass with right-click → Open |
+| Unsigned (current) | Gatekeeper blocks first launch — use **Privacy & Security → Open Anyway** ([INSTALL.md](INSTALL.md#macos-security-warning-expected)) |
 | Signed + notarized | Opens without warning |
 
 ---
