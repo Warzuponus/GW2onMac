@@ -30,7 +30,11 @@ if [[ "$(sysctl -n sysctl.proc_translated 2>/dev/null || echo 0)" != "1" ]]; the
 fi
 
 if [[ ! -x /usr/local/bin/brew ]]; then
-  cat >&2 <<'EOF'
+  if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+    log "CI: Installing x86_64 Homebrew at /usr/local (non-interactive)..."
+    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  else
+    cat >&2 <<'EOF'
 error: x86_64 Homebrew is not installed at /usr/local.
 
 Apple Silicon needs a separate Intel/Rosetta Homebrew for Wine build dependencies.
@@ -48,10 +52,14 @@ Re-run:
 
 Docs: https://docs.brew.sh/Installation#macos-11-or-higher-on-arm
 EOF
-  exit 1
+    exit 1
+  fi
 fi
 
 eval "$(/usr/local/bin/brew shellenv)"
+
+export HOMEBREW_NO_AUTO_UPDATE=1
+export HOMEBREW_NO_INSTALL_CLEANUP=1
 
 log "Installing x86_64 build dependencies via /usr/local Homebrew..."
 log "(This can take 15–30 minutes.)"

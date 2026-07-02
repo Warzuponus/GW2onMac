@@ -15,6 +15,9 @@ jobs:
   build-runtime:
     runs-on: macos-15
     timeout-minutes: 180
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      HOMEBREW_NO_INSTALL_CLEANUP: 1
     steps:
       - uses: actions/checkout@v4
 
