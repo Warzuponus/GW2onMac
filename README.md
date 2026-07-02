@@ -98,7 +98,7 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-GitHub Actions builds `GW2onMac-0.1.0.dmg` and attaches it to the release (unsigned).
+GitHub Actions builds `GW2onMac-<version>.dmg` and attaches it to the release (unsigned).
 
 ### Publish a runtime release (maintainers)
 

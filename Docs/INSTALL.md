@@ -78,7 +78,7 @@ When available, download the latest **`GW2onMac`** release from:
 **https://github.com/Warzuponus/GW2onMac/releases**
 
 1. Open the newest release.
-2. Download **`GW2onMac-0.1.0.dmg`** (or the latest version).
+2. Download **`GW2onMac-0.1.1.dmg`** (or the latest **`GW2onMac-*.dmg`** from [Releases](https://github.com/Warzuponus/GW2onMac/releases)).
 3. Open the DMG and drag **GW2onMac** to **Applications**.
 4. Follow [macOS security warning (expected)](#macos-security-warning-expected) above to open the app the first time.
 
