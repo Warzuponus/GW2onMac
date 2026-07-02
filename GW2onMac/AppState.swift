@@ -31,6 +31,8 @@ final class AppState: ObservableObject {
     @Published var runtimeInstallPhase: RuntimeInstallPhase = .idle
     @Published var gw2InstallPhase: GW2InstallPhase = .idle
     @Published var runtimeUpdateAvailable: SemanticVersion?
+    /// When true, show the setup wizard even if the user could use the launcher.
+    @Published var showSetupWizard = false
 
     var isRuntimeInstalled: Bool { WineRuntimeInstaller.isRuntimeInstalled() }
     var isD3DMetalAvailable: Bool { WineRuntimeInstaller.isD3DMetalAvailable() }
@@ -54,10 +56,12 @@ final class AppState: ObservableObject {
         }
     }
 
-    /// Show the main launcher once Wine runtime is present.
-    var showsHome: Bool { isRuntimeInstalled }
+    /// Show the launcher only after all setup steps are complete.
+    var showsHome: Bool { isReadyToPlay && !showSetupWizard }
 
     var isReadyToPlay: Bool { isRuntimeInstalled && isD3DMetalAvailable && hasPrefix && isGameInstalled }
+
+    var needsSetup: Bool { !isReadyToPlay }
 
     init() {
         bottleManager.loadBottle()
@@ -67,7 +71,17 @@ final class AppState: ObservableObject {
 
     func refresh() {
         bottleManager.loadBottle()
+        objectWillChange.send()
         Task { await bottleManager.applyPerformanceTuningIfNeeded() }
+    }
+
+    func openSetupWizard() {
+        showSetupWizard = true
+    }
+
+    func finishSetupWizard() {
+        showSetupWizard = false
+        refresh()
     }
 
     func checkRuntimeUpdate() async {

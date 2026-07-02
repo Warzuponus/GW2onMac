@@ -32,7 +32,13 @@ struct SetupWizardView: View {
             HStack {
                 Button("Refresh") { appState.refresh() }
                     .disabled(isBusy || appState.isRuntimeBusy || appState.isGW2InstallBusy)
+
                 Spacer()
+
+                if appState.isReadyToPlay {
+                    Button("Open Launcher") { appState.finishSetupWizard() }
+                        .keyboardShortcut(.defaultAction)
+                }
             }
 
             Spacer(minLength: 0)
@@ -139,11 +145,22 @@ struct SetupWizardView: View {
     }
 
     private var gptkStep: some View {
-        setupStep(
-            title: "D3DMetal (GPTK)",
-            ok: appState.isD3DMetalAvailable,
-            detail: "Install Apple Game Porting Toolkit 4.x and copy D3DMetal into the Wine runtime. See README."
-        )
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                stepIcon(ok: appState.isD3DMetalAvailable)
+                Text("D3DMetal (GPTK)")
+                    .font(.headline)
+            }
+            Text("Install Apple Game Porting Toolkit 4.x, then copy D3DMetal.framework into the Wine runtime. Full instructions:")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+            Link("GPTK install guide (GitHub)",
+                 destination: URL(string: "https://github.com/Warzuponus/GW2onMac/blob/main/Docs/INSTALL.md#step-4--install-apple-game-porting-toolkit-d3dmetal")!)
+                .font(.callout)
+            Text("After copying D3DMetal, click Refresh above.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
     }
 
     private var prefixStep: some View {

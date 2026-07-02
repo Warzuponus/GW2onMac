@@ -5,16 +5,12 @@
 
 import SwiftUI
 import GW2Kit
-import UniformTypeIdentifiers
 
 struct HomeView: View {
     @EnvironmentObject private var appState: AppState
     @State private var statusMessage = ""
     @State private var isBusy = false
     @State private var launchArguments = GW2Profile.defaultLaunchArguments
-    @State private var showImportPicker = false
-
-    private var gw2Installed: Bool { appState.isGameInstalled }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -26,16 +22,11 @@ struct HomeView: View {
             }
 
             runtimeActions
-            gw2InstallActions
 
             if let version = WineRuntimeInstaller.runtimeVersion() {
                 Text("Runtime v\(version.major).\(version.minor).\(version.patch)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-            }
-
-            if !gw2Installed, appState.hasPrefix {
-                incompleteSetupBanner
             }
 
             VStack(alignment: .leading, spacing: 6) {
@@ -60,10 +51,7 @@ struct HomeView: View {
                 Button("Repair launcher") { repairLauncher() }
                     .disabled(isBusy || !appState.hasPrefix)
 
-                Button("Create Prefix") {
-                    Task { await createPrefix() }
-                }
-                .disabled(isBusy || appState.hasPrefix)
+                Button("Setup…") { appState.openSetupWizard() }
             }
 
             if !statusMessage.isEmpty {
@@ -81,19 +69,6 @@ struct HomeView: View {
         .padding(24)
         .frame(minWidth: 520, minHeight: 480)
         .onAppear { loadLaunchArguments() }
-        .fileImporter(
-            isPresented: $showImportPicker,
-            allowedContentTypes: [.folder],
-            allowsMultipleSelection: false
-        ) { result in
-            switch result {
-            case .success(let urls):
-                guard let folder = urls.first else { return }
-                Task { await appState.importExistingInstall(from: folder) }
-            case .failure(let error):
-                statusMessage = error.localizedDescription
-            }
-        }
     }
 
     @ViewBuilder
@@ -119,38 +94,6 @@ struct HomeView: View {
         }
     }
 
-    @ViewBuilder
-    private var gw2InstallActions: some View {
-        if appState.hasPrefix, !gw2Installed {
-            HStack {
-                Button("Install GW2") {
-                    Task { await appState.downloadAndRunGW2Setup() }
-                }
-                .disabled(appState.isGW2InstallBusy)
-
-                Button("Import Existing…") { showImportPicker = true }
-                    .disabled(appState.isGW2InstallBusy)
-            }
-        }
-
-        switch appState.gw2InstallPhase {
-        case .downloading(let fraction):
-            ProgressView(value: fraction) { Text("Downloading Gw2Setup…") }
-        case .launching, .waitingForGame, .importing:
-            ProgressView("Installing Guild Wars 2…")
-        case .failed(let message):
-            Text(message).font(.caption).foregroundStyle(.secondary)
-        default:
-            EmptyView()
-        }
-    }
-
-    private var incompleteSetupBanner: some View {
-        Text("Finish installing Guild Wars 2 to enable Play.")
-            .font(.callout)
-            .foregroundStyle(.secondary)
-    }
-
     private func loadLaunchArguments() {
         guard let program = appState.bottleManager.launcherProgram() else { return }
         launchArguments = program.settings.arguments
@@ -159,18 +102,6 @@ struct HomeView: View {
     private func saveLaunchArguments() {
         guard var program = appState.bottleManager.launcherProgram() else { return }
         program.settings.arguments = launchArguments
-    }
-
-    private func createPrefix() async {
-        isBusy = true
-        defer { isBusy = false }
-
-        do {
-            try await appState.createPrefix()
-            statusMessage = "GW2 prefix ready."
-        } catch {
-            statusMessage = error.localizedDescription
-        }
     }
 
     private func repairLauncher() {
