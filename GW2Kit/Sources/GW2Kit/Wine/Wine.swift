@@ -33,15 +33,32 @@ public class Wine {
         fileHandle: FileHandle?
     ) throws -> AsyncStream<ProcessOutput> {
         let process = Process()
-        process.executableURL = executableURL
-        process.arguments = args
+        let (execURL, processArgs) = rosettaWrappedExecutable(executableURL, arguments: args)
+        process.executableURL = execURL
+        process.arguments = processArgs
         process.currentDirectoryURL = directory ?? executableURL.deletingLastPathComponent()
         process.environment = environment
         process.qualityOfService = .userInitiated
 
         return try process.runStream(
-            name: name ?? args.joined(separator: " "), fileHandle: fileHandle
+            name: name ?? processArgs.joined(separator: " "), fileHandle: fileHandle
         )
+    }
+
+    /// Wine is x86_64; launch under Rosetta explicitly on Apple Silicon (matches shell scripts).
+    private static func rosettaWrappedExecutable(_ executableURL: URL, arguments: [String]) -> (URL, [String]) {
+        #if arch(arm64)
+        switch executableURL.lastPathComponent {
+        case "wine64", "wine", "wineserver":
+            return (
+                URL(fileURLWithPath: "/usr/bin/arch"),
+                ["-x86_64", executableURL.path(percentEncoded: false)] + arguments
+            )
+        default:
+            break
+        }
+        #endif
+        return (executableURL, arguments)
     }
 
     /// Run a `wine` process with the given arguments and environment variables returning a stream of output
@@ -244,6 +261,7 @@ public class Wine {
             "WINEPREFIX": bottle.url.path
         ]
         result.merge(GW2Profile.environmentOverrides()) { _, new in new }
+        result.merge(WineRuntimeInstaller.d3dMetalEnvironmentOverrides()) { _, new in new }
         bottle.settings.environmentVariables(wineEnv: &result)
         applyNativeDyldLibraryPath(to: &result)
         guard !environment.isEmpty else { return result }

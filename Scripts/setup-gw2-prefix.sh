@@ -32,6 +32,7 @@ wine() { arch -x86_64 env DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH" "$WINE" "$@"; }
 
 [[ -x "$WINE" ]] || die "Wine runtime not installed. See README step 3."
 [[ -d "$LIB/lib/external/D3DMetal.framework" ]] || die "D3DMetal not found in Wine lib/external."
+[[ -f "$LIB/lib/external/libd3dshared.dylib" ]] || die "libd3dshared.dylib not found in Wine lib/external."
 setup_dyld_path
 
 mkdir -p "$PREFIX"

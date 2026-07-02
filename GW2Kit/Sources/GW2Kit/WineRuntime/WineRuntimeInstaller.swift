@@ -147,17 +147,45 @@ public class WineRuntimeInstaller {
         return nil
     }
 
+    /// Folder where GPTK copies D3DMetal.framework and libd3dshared.dylib.
+    public static var d3dMetalExternalFolder: URL {
+        libraryFolder.appending(path: "Wine/lib/external")
+    }
+
     /// Detect whether Apple Game Porting Toolkit / D3DMetal is available for DirectX 11 (GW2 default).
     public static func isD3DMetalAvailable() -> Bool {
-        let searchPaths = [
+        if isBundledD3DMetalComplete() {
+            return true
+        }
+
+        let legacyPaths = [
             "/usr/local/lib/d3dmetal",
             "/opt/homebrew/lib/d3dmetal",
-            libraryFolder.appending(path: "D3DMetal").path,
-            libraryFolder.appending(path: "Wine/lib/external/D3DMetal.framework").path
+            libraryFolder.appending(path: "D3DMetal").path
         ]
-        return searchPaths.contains { path in
-            FileManager.default.fileExists(atPath: path)
+        return legacyPaths.contains { FileManager.default.fileExists(atPath: $0) }
+    }
+
+    /// Bundled GPTK layout requires both D3DMetal.framework and libd3dshared.dylib.
+    public static func isBundledD3DMetalComplete() -> Bool {
+        let external = d3dMetalExternalFolder
+        let framework = external.appending(path: "D3DMetal.framework").path
+        let libd3dshared = external.appending(path: "libd3dshared.dylib").path
+        return FileManager.default.fileExists(atPath: framework)
+            && FileManager.default.fileExists(atPath: libd3dshared)
+    }
+
+    /// CrossOver-style environment variables required for D3DMetal on Apple Silicon.
+    public static func d3dMetalEnvironmentOverrides() -> [String: String] {
+        let libd3dshared = d3dMetalExternalFolder.appending(path: "libd3dshared.dylib")
+        guard FileManager.default.fileExists(atPath: libd3dshared.path) else {
+            return [:]
         }
+
+        return [
+            "CX_ACTIVE_GRAPHICS_BACKEND": "d3dmetal",
+            "CX_APPLEGPTK_LIBD3DSHARED_PATH": libd3dshared.path
+        ]
     }
 }
 

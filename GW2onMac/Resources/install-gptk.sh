@@ -119,14 +119,19 @@ install_shader_converter() {
 }
 
 copy_d3dmetal() {
-  local src
-  src="$(find "$EVAL_ROOT" -name 'D3DMetal.framework' -print -quit)"
-  [[ -n "$src" ]] || die "D3DMetal.framework not found in evaluation environment."
+  local src_dir
+  src_dir="$(find "$EVAL_ROOT" -type d -path '*/redist/lib/external' -print -quit)"
+  if [[ -z "$src_dir" ]]; then
+    src_dir="$(find "$EVAL_ROOT" -name 'D3DMetal.framework' -print -quit)"
+    src_dir="$(dirname "$src_dir")"
+  fi
+  [[ -d "$src_dir/D3DMetal.framework" ]] || die "D3DMetal.framework not found in evaluation environment."
+  [[ -f "$src_dir/libd3dshared.dylib" ]] || die "libd3dshared.dylib not found in evaluation environment."
 
   mkdir -p "$(dirname "$DEST")"
-  rm -rf "$DEST"
-  echo "Copying D3DMetal.framework to $DEST"
-  cp -R "$src" "$DEST"
+  echo "Copying GPTK external libraries to $(dirname "$DEST")"
+  rm -rf "$(dirname "$DEST")"/*
+  cp -R "$src_dir/"* "$(dirname "$DEST")/"
 }
 
 SOURCE="${1:-}"

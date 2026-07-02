@@ -57,6 +57,7 @@ public final class GW2BottleManager: ObservableObject, @unchecked Sendable {
 
         let wineVer = try await Wine.wineVersion()
         newBottle.settings.wineVersion = SemanticVersion(wineVer) ?? SemanticVersion(0, 0, 0)
+        try newBottle.settings.encode(to: newBottle.url.appending(path: "Metadata").appendingPathExtension("plist"))
         newBottle.inFlight = false
         newBottle.isAvailable = true
 

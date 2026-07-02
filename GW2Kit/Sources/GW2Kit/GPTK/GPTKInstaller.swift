@@ -45,7 +45,7 @@ public enum GPTKInstallerError: LocalizedError {
         case .shaderConverterInstallFailed(let detail):
             return "Metal Shader Converter install failed: \(detail)"
         case .d3dMetalNotFound:
-            return "D3DMetal.framework was not found inside the evaluation environment."
+            return "D3DMetal libraries were not found inside the evaluation environment (expected D3DMetal.framework and libd3dshared.dylib)."
         case .copyFailed(let detail):
             return "Could not copy D3DMetal.framework: \(detail)"
         }
@@ -143,12 +143,12 @@ public enum GPTKInstaller {
             try await installPackage(at: shaderPkg)
         }
 
-        guard let d3dMetal = findD3DMetalFramework(in: evaluationRoot) else {
+        guard let externalSource = findExternalLibFolder(in: evaluationRoot) else {
             throw GPTKInstallerError.d3dMetalNotFound
         }
 
         progress?(.copyingD3DMetal)
-        try copyD3DMetal(from: d3dMetal)
+        try copyExternalLibraries(from: externalSource)
 
         progress?(.complete)
     }
@@ -249,6 +249,18 @@ public enum GPTKInstaller {
         throw GPTKInstallerError.shaderConverterPackageNotFound
     }
 
+    private static func findExternalLibFolder(in root: URL) -> URL? {
+        let preferred = root.appending(path: "redist/lib/external")
+        if FileManager.default.fileExists(atPath: preferred.path) {
+            return preferred
+        }
+
+        guard let framework = findNamedFramework("D3DMetal.framework", under: root) else {
+            return nil
+        }
+        return framework.deletingLastPathComponent()
+    }
+
     private static func findD3DMetalFramework(in root: URL) -> URL? {
         let preferred = root
             .appending(path: "redist/lib/external/D3DMetal.framework")
@@ -278,21 +290,33 @@ public enum GPTKInstaller {
 
     // MARK: - Install actions
 
-    private static func copyD3DMetal(from source: URL) throws {
-        let destinationRoot = WineRuntimeInstaller.libraryFolder
-            .appending(path: "Wine/lib/external")
-        let destination = destinationRoot.appending(path: "D3DMetal.framework")
+    private static func copyExternalLibraries(from sourceDir: URL) throws {
+        let destinationRoot = WineRuntimeInstaller.d3dMetalExternalFolder
 
         try FileManager.default.createDirectory(at: destinationRoot, withIntermediateDirectories: true)
 
-        if FileManager.default.fileExists(atPath: destination.path) {
-            try FileManager.default.removeItem(at: destination)
+        guard let items = try? FileManager.default.contentsOfDirectory(
+            at: sourceDir,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ), !items.isEmpty else {
+            throw GPTKInstallerError.d3dMetalNotFound
         }
 
-        do {
-            try FileManager.default.copyItem(at: source, to: destination)
-        } catch {
-            throw GPTKInstallerError.copyFailed(error.localizedDescription)
+        for item in items {
+            let destination = destinationRoot.appending(path: item.lastPathComponent)
+            if FileManager.default.fileExists(atPath: destination.path) {
+                try FileManager.default.removeItem(at: destination)
+            }
+            do {
+                try FileManager.default.copyItem(at: item, to: destination)
+            } catch {
+                throw GPTKInstallerError.copyFailed(error.localizedDescription)
+            }
+        }
+
+        guard WineRuntimeInstaller.isBundledD3DMetalComplete() else {
+            throw GPTKInstallerError.d3dMetalNotFound
         }
     }
 

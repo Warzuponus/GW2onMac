@@ -92,7 +92,7 @@ When available, download the latest **`GW2onMac`** release from:
 **https://github.com/Warzuponus/GW2onMac/releases**
 
 1. Open the newest release.
-2. Download **`GW2onMac-0.1.5.dmg`** (or the latest **`GW2onMac-*.dmg`** from [Releases](https://github.com/Warzuponus/GW2onMac/releases)).
+2. Download **`GW2onMac-0.1.6.dmg`** (or the latest **`GW2onMac-*.dmg`** from [Releases](https://github.com/Warzuponus/GW2onMac/releases)).
 3. Open the DMG and drag **GW2onMac** to **Applications**.
 4. Follow [macOS security warning (expected)](#macos-security-warning-expected) above to open the app the first time.
 
@@ -153,7 +153,7 @@ Guild Wars 2 uses **DirectX 11**. On Mac, that requires Apple’s **D3DMetal** l
 4. Enter your Mac password when prompted — GW2onMac installs **Metal Shader Converter** and copies **D3DMetal.framework** into the Wine runtime.
 5. The step should show a green checkmark when finished.
 
-GW2onMac looks for GPTK on mounted volumes (e.g. `/Volumes/Game Porting Toolkit`) and in **Downloads**.
+GW2onMac looks for GPTK on mounted volumes (e.g. `/Volumes/Game Porting Toolkit`) and in **Downloads**. This copies **D3DMetal.framework** and **libd3dshared.dylib** (both required for DirectX 11).
 
 ### 4c. Manual install (advanced)
 
@@ -242,7 +242,8 @@ Run ArenaNet’s installer inside the Wine prefix using GW2onMac’s terminal mo
 | Problem | What to try |
 |---------|-------------|
 | “Wine runtime not installed” | Click **Download Runtime** again |
-| “D3DMetal not found” | Copy `D3DMetal.framework` to `lib/external/` (Step 4) |
+| “Unable to initialize 3D output” / DirectX 11 error | Re-run **Install GPTK** (needs `libd3dshared.dylib` + D3DMetal.framework). Update to GW2onMac **v0.1.6+** |
+| “D3DMetal not found” | Re-run **Install GPTK** or copy GPTK `redist/lib/external/` into Wine `lib/external/` |
 | “Create Prefix” fails | Install Rosetta + D3DMetal first |
 | **Create Prefix** seems stuck / app frozen | Wait 1–2 min after any Rosetta install dialog; Wine is still running `wineboot` |
 | Rosetta popup during **Create Prefix** | Click **Install** in the system dialog, or install Rosetta in Step 2 first |
