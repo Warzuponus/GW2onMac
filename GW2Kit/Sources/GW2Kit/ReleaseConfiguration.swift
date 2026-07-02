@@ -14,7 +14,7 @@ public enum ReleaseConfiguration {
         if let repo = ProcessInfo.processInfo.environment["GW2ONMAC_GITHUB_REPO"], !repo.isEmpty {
             return repo
         }
-        return "PLACEHOLDER/GW2onMac"
+        return "Warzuponus/GW2onMac"
     }
 
     public static var runtimeDownloadURL: URL {
