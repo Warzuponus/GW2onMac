@@ -7,6 +7,8 @@ Open-source Guild Wars 2 launcher for **Apple Silicon Macs** (M1 and newer). GW2
 
 **Install guide for players:** [Docs/INSTALL.md](Docs/INSTALL.md)
 
+> **macOS security warning:** GW2onMac is **not code-signed** (no paid Apple Developer certificate). macOS will show an “unidentified developer” warning on first launch — **this is expected and safe** if you downloaded from [our GitHub Releases](https://github.com/Warzuponus/GW2onMac/releases). See [INSTALL.md — macOS security warning](Docs/INSTALL.md#macos-security-warning-expected).
+
 ---
 
 ## For players — quick overview
@@ -14,11 +16,12 @@ Open-source Guild Wars 2 launcher for **Apple Silicon Macs** (M1 and newer). GW2
 You do **not** need Xcode, Homebrew, or to compile Wine yourself.
 
 1. **Download GW2onMac** from [GitHub Releases](https://github.com/Warzuponus/GW2onMac/releases)
-2. **Open the app** and follow the setup wizard
-3. **Install Rosetta 2** (one click in the app)
-4. **Download the Wine runtime** (one click — ~450 MB, hosted on GitHub)
-5. **Install Apple Game Porting Toolkit** and copy D3DMetal (see [INSTALL.md](Docs/INSTALL.md#step-4--install-apple-game-porting-toolkit-d3dmetal))
-6. **Create Prefix** → **Install GW2** → **Play**
+2. **Bypass the macOS security warning** (expected for unsigned apps — see [INSTALL.md](Docs/INSTALL.md#macos-security-warning-expected))
+3. **Open the app** and follow the setup wizard
+4. **Install Rosetta 2** (one click in the app)
+5. **Download the Wine runtime** (one click — ~450 MB, hosted on GitHub)
+6. **Install Apple Game Porting Toolkit** and copy D3DMetal (see [INSTALL.md](Docs/INSTALL.md#step-4--install-apple-game-porting-toolkit-d3dmetal))
+7. **Create Prefix** → **Install GW2** → **Play**
 
 Full step-by-step instructions with links: **[Docs/INSTALL.md](Docs/INSTALL.md)**
 
@@ -39,7 +42,7 @@ GW2onMac is designed so **players download pre-compiled artifacts** instead of b
 | Component | Pre-built? | Where users get it |
 |-----------|------------|-------------------|
 | **Wine runtime** (`Libraries.tar.gz`) | Yes | In-app **Download Runtime** from [GitHub Releases](https://github.com/Warzuponus/GW2onMac/releases) |
-| **GW2onMac app** | Planned | GitHub Releases (`.app` / `.dmg`) |
+| **GW2onMac app** | Yes | GitHub Releases (`GW2onMac-*.dmg`) — unsigned |
 | **D3DMetal (GPTK)** | No — user must install | [Apple Developer](https://developer.apple.com/games/game-porting-toolkit/) |
 | **Guild Wars 2** | No — user must install | ArenaNet via in-app **Install GW2** |
 
@@ -54,7 +57,7 @@ GW2onMac is designed so **players download pre-compiled artifacts** instead of b
 | Concern | Impact | Mitigation |
 |---------|--------|------------|
 | Large download (~450 MB runtime) | Slow on slow connections | In-app downloader with progress; host on GitHub Releases CDN |
-| macOS Gatekeeper | “Unidentified developer” warning without signing | Code signing + notarization (planned) |
+| macOS Gatekeeper | “Unidentified developer” warning — **expected** | GW2onMac is unsigned; see [INSTALL.md](Docs/INSTALL.md#macos-security-warning-expected) |
 | Trust | Users must trust release artifacts | Open source, reproducible CI builds, checksums in release notes |
 | GPTK still manual | Biggest remaining friction for non-technical users | Detailed [INSTALL.md](Docs/INSTALL.md) with copy-paste paths |
 | Updates | Old runtimes may break | In-app **Update Runtime** when a newer release is published |
@@ -95,7 +98,7 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-GitHub Actions builds `GW2onMac-0.1.0.dmg` and attaches it to the release. See [Docs/CODESIGNING.md](Docs/CODESIGNING.md) for signing and notarization.
+GitHub Actions builds `GW2onMac-0.1.0.dmg` and attaches it to the release (unsigned).
 
 ### Publish a runtime release (maintainers)
 

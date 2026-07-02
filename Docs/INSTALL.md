@@ -18,6 +18,51 @@ This guide is for **players** who want to run Guild Wars 2 on an **Apple Silicon
 
 ---
 
+## macOS security warning (expected)
+
+GW2onMac is **open source** but **not code-signed** with an Apple Developer certificate (that requires a paid $99/year membership). Because of this, macOS Gatekeeper will block or warn on first launch.
+
+**This is normal.** You are not doing anything wrong.
+
+### How to open GW2onMac
+
+**Method 1 — Right-click Open (easiest)**
+
+1. Download and install from [GitHub Releases](https://github.com/Warzuponus/GW2onMac/releases) only.
+2. Open the DMG and drag **GW2onMac** to **Applications**.
+3. In **Applications**, **right-click** (or Control-click) **GW2onMac**.
+4. Choose **Open** from the menu.
+5. Click **Open** in the dialog (not Cancel).
+6. GW2onMac launches. You only need to do this once — after that, double-click works.
+
+**Method 2 — System Settings**
+
+1. Try to open GW2onMac normally (double-click).
+2. macOS says the app “cannot be opened because it is from an unidentified developer.”
+3. Open **System Settings → Privacy & Security**.
+4. Scroll down — you should see a message about **GW2onMac** being blocked.
+5. Click **Open Anyway**, then confirm **Open**.
+
+**Method 3 — Remove quarantine (Terminal)**
+
+If the above does not work (e.g. after downloading via a browser that flagged the file):
+
+```bash
+xattr -dr com.apple.quarantine /Applications/GW2onMac.app
+```
+
+Then open the app normally.
+
+### Is it safe?
+
+Only download from the official repo:
+
+**https://github.com/Warzuponus/GW2onMac/releases**
+
+The app is open source — you can inspect the code in this repository. Unsigned distribution is a cost limitation, not a sign the app is malicious.
+
+---
+
 ## Step 1 — Get GW2onMac
 
 ### Option A: Download a release (recommended)
@@ -27,9 +72,9 @@ When available, download the latest **`GW2onMac`** release from:
 **https://github.com/Warzuponus/GW2onMac/releases**
 
 1. Open the newest release.
-2. Download **`GW2onMac-0.1.0.dmg`** (or the latest version) from the [Releases](https://github.com/Warzuponus/GW2onMac/releases) page.
+2. Download **`GW2onMac-0.1.0.dmg`** (or the latest version).
 3. Open the DMG and drag **GW2onMac** to **Applications**.
-4. If macOS warns the app is from an unidentified developer, open **System Settings → Privacy & Security** and click **Open Anyway** (first launch only). A signed and notarized release avoids this — see [CODESIGNING.md](CODESIGNING.md).
+4. Follow [macOS security warning (expected)](#macos-security-warning-expected) above to open the app the first time.
 
 ### Option B: Build from source (developers)
 
@@ -156,7 +201,7 @@ Run ArenaNet’s installer inside the Wine prefix using GW2onMac’s terminal mo
 | “Create Prefix” fails | Install Rosetta + D3DMetal first |
 | Game installs but Play is disabled | Click **Refresh** |
 | Very low FPS on 16 GB Mac | Lower character models, shadows, reflections in-game |
-| macOS blocks the app | System Settings → Privacy & Security → Open Anyway |
+| macOS blocks or warns about GW2onMac | Expected — see [macOS security warning](#macos-security-warning-expected) |
 
 ---
 
