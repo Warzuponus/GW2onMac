@@ -281,9 +281,6 @@ public class Wine {
         var result: [String: String] = [:]
         result["WINEPREFIX"] = bottle.url.path
         result.merge(GW2Profile.environmentOverrides()) { _, new in new }
-        result.merge(WineRuntimeInstaller.d3dMetalEnvironmentOverrides(
-            enableBackend: bottle.settings.d3dMetalBackend
-        )) { _, new in new }
         bottle.settings.environmentVariables(wineEnv: &result)
 
         let wineBin = WineRuntimeInstaller.binFolder.path(percentEncoded: false)

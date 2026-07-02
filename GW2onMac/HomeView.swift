@@ -54,20 +54,6 @@ struct HomeView: View {
                 Button("Setup…") { appState.openSetupWizard() }
             }
 
-            if appState.hasPrefix {
-                Toggle(isOn: Binding(
-                    get: { appState.d3dMetalBackendEnabled },
-                    set: { appState.setD3DMetalBackendEnabled($0) }
-                )) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Force full D3DMetal backend (breaks login UI)")
-                        Text("Leave off. v0.1.13 uses launch-gw2.sh with libd3dshared for in-game DX11. Turn on only if DirectX 11 still fails.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-
             if !statusMessage.isEmpty {
                 Text(statusMessage)
                     .font(.caption)
@@ -84,7 +70,6 @@ struct HomeView: View {
         .frame(minWidth: 520, minHeight: 480)
         .onAppear {
             loadLaunchArguments()
-            appState.syncD3DMetalBackendFromBottle()
         }
     }
 

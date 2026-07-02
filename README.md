@@ -1,5 +1,7 @@
 # GW2onMac
 
+> **Private beta — not ready for general use.** The maintainers are rebuilding from a known-good local script workflow. Do not share download links until a public release is announced.
+
 Open-source Guild Wars 2 launcher for **Apple Silicon Macs** (M1 and newer). GW2onMac uses a pre-built **Wine 11** runtime and Apple’s **Game Porting Toolkit (D3DMetal)** to run GW2 on macOS.
 
 > **Unsupported by ArenaNet.** Community-maintained. Not affiliated with ArenaNet or NCSOFT.  

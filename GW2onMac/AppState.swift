@@ -49,9 +49,6 @@ final class AppState: ObservableObject {
     @Published var runtimeUpdateAvailable: SemanticVersion?
     /// When true, show the setup wizard even if the user could use the launcher.
     @Published var showSetupWizard = false
-    /// Persisted via bottle Metadata.plist — exposed here so SwiftUI observes changes.
-    @Published var d3dMetalBackendEnabled = false
-
     var isRuntimeInstalled: Bool { WineRuntimeInstaller.isRuntimeInstalled() }
     var isD3DMetalAvailable: Bool { WineRuntimeInstaller.isD3DMetalAvailable() }
     var isRosettaInstalled: Bool { Rosetta2.isInstalled() }
@@ -98,25 +95,14 @@ final class AppState: ObservableObject {
 
     init() {
         bottleManager.loadBottle()
-        syncD3DMetalBackendFromBottle()
         Task { await bottleManager.applyPerformanceTuningIfNeeded() }
         Task { await checkRuntimeUpdate() }
     }
 
     func refresh() {
         bottleManager.loadBottle()
-        syncD3DMetalBackendFromBottle()
         objectWillChange.send()
         Task { await bottleManager.applyPerformanceTuningIfNeeded() }
-    }
-
-    func setD3DMetalBackendEnabled(_ enabled: Bool) {
-        d3dMetalBackendEnabled = enabled
-        bottleManager.bottle?.settings.d3dMetalBackend = enabled
-    }
-
-    func syncD3DMetalBackendFromBottle() {
-        d3dMetalBackendEnabled = bottleManager.bottle?.settings.d3dMetalBackend ?? false
     }
 
     func openSetupWizard() {

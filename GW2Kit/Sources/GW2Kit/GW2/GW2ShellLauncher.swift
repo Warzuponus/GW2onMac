@@ -24,17 +24,7 @@ public enum GW2ShellLauncherError: LocalizedError {
 
 public enum GW2ShellLauncher {
     /// Launch Guild Wars 2 using the bundled shell script (matches `./Scripts/launch-gw2.sh`).
-    public static func launch(
-        bottle: Bottle,
-        arguments: String,
-        useD3dMetalBackend: Bool
-    ) throws {
-        if !WineRuntimeInstaller.isBundledD3DMetalComplete() {
-            throw GW2ShellLauncherError.launchFailed(
-                "GPTK libraries are incomplete. Re-run Install GPTK — need D3DMetal.framework and libd3dshared.dylib in Wine/lib/external/."
-            )
-        }
-
+    public static func launch(bottle: Bottle, arguments: String) throws {
         GW2RuntimePreparer.ensureNativeDylibsBundled()
 
         guard let script = launchScriptURL() else {
@@ -46,8 +36,6 @@ public enum GW2ShellLauncher {
         var env = ProcessInfo.processInfo.environment
         env["GW2ONMAC_BUNDLE_ID"] = bundleID
         env["WINEPREFIX"] = bottle.url.path
-        env["GW2ONMAC_LIBD3DSHARED"] = "1"
-        env["GW2ONMAC_D3DMETAL"] = useD3dMetalBackend ? "1" : "0"
 
         var args = [script.path(percentEncoded: false)]
         if !arguments.isEmpty {
@@ -59,9 +47,7 @@ public enum GW2ShellLauncher {
         process.arguments = args
         process.environment = env
 
-        Logger.gw2Kit.info(
-            "Launching GW2 via shell script (bundle=\(bundleID, privacy: .public), d3dmetal=\(useD3dMetalBackend, privacy: .public))"
-        )
+        Logger.gw2Kit.info("Launching GW2 via shell script (bundle=\(bundleID, privacy: .public))")
 
         try process.run()
     }
