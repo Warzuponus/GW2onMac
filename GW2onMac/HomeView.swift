@@ -60,8 +60,8 @@ struct HomeView: View {
                     set: { appState.setD3DMetalBackendEnabled($0) }
                 )) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("DirectX 11 fallback (CrossOver env vars)")
-                        Text("Leave off — v0.1.12 matches launch-gw2.sh. Only turn on if in-game DirectX 11 still fails after updating.")
+                        Text("Force full D3DMetal backend (breaks login UI)")
+                        Text("Leave off. v0.1.13 uses launch-gw2.sh with libd3dshared for in-game DX11. Turn on only if DirectX 11 still fails.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

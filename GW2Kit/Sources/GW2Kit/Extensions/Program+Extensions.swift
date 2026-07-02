@@ -14,8 +14,29 @@ extension Program {
     public func run() {
         if NSEvent.modifierFlags.contains(.shift) {
             runInTerminal()
+        } else if url.lastPathComponent == GW2Profile.launcherExecutable {
+            runViaShellScript()
         } else {
             runInWine()
+        }
+    }
+
+    func runViaShellScript() {
+        let arguments = settings.arguments
+        let useBackend = bottle.settings.d3dMetalBackend
+
+        Task.detached(priority: .userInitiated) {
+            do {
+                try GW2ShellLauncher.launch(
+                    bottle: self.bottle,
+                    arguments: arguments,
+                    useD3dMetalBackend: useBackend
+                )
+            } catch {
+                await MainActor.run {
+                    self.showRunError(message: error.localizedDescription)
+                }
+            }
         }
     }
 
