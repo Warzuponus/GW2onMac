@@ -1,0 +1,62 @@
+name: Release Wine Runtime
+
+on:
+  push:
+    tags:
+      - "runtime-v*"
+  workflow_dispatch:
+    inputs:
+      runtime_version:
+        description: "Runtime semver (e.g. 0.1.0)"
+        required: true
+        default: "0.1.0"
+
+jobs:
+  build-runtime:
+    runs-on: macos-15
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install x86_64 build dependencies
+        run: ./Scripts/install-x86_64-build-deps.sh
+
+      - name: Build Wine runtime
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ inputs.runtime_version }}"
+          else
+            VERSION="${GITHUB_REF_NAME#runtime-v}"
+          fi
+          RUNTIME_VERSION="$VERSION" ./Scripts/build-wine-runtime.sh
+
+      - name: Upload runtime artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wine-runtime
+          path: |
+            dist/Libraries.tar.gz
+            dist/GW2onMacWineVersion.plist
+
+  publish-release:
+    needs: build-runtime
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/runtime-v')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download runtime artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: wine-runtime
+          path: dist
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/Libraries.tar.gz
+            dist/GW2onMacWineVersion.plist
+          generate_release_notes: true

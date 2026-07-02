@@ -1,0 +1,24 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build GW2Kit
+        run: swift build --package-path GW2Kit
+
+      - name: Build GW2onMac app
+        run: |
+          xcodebuild -project GW2onMac.xcodeproj \
+            -scheme GW2onMac \
+            -configuration Debug \
+            build \
+            CODE_SIGNING_ALLOWED=NO

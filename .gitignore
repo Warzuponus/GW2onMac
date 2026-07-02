@@ -1,0 +1,17 @@
+.build/
+DerivedData/
+dist/
+build/
+*.xcuserstate
+*.xcuserdata/
+.DS_Store
+
+# Wine build artifacts
+crossover-sources-*.tar.gz
+
+# Xcode
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+xcuserdata/
