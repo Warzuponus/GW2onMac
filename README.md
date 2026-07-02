@@ -1,153 +1,140 @@
 # GW2onMac
 
-Open-source Guild Wars 2 launcher for **Apple Silicon Macs**. GW2onMac wraps a self-built **Wine 11** runtime (compiled from [CodeWeavers CrossOver FOSS sources](https://www.codeweavers.com/crossover/source)) and a single GW2-tuned Wine prefix.
+Open-source Guild Wars 2 launcher for **Apple Silicon Macs** (M1 and newer). GW2onMac uses a pre-built **Wine 11** runtime and Apple’s **Game Porting Toolkit (D3DMetal)** to run GW2 on macOS.
 
-> **Unsupported by ArenaNet.** This project is community-maintained and not affiliated with ArenaNet or NCSOFT.
+> **Unsupported by ArenaNet.** Community-maintained. Not affiliated with ArenaNet or NCSOFT.  
+> **Intel Macs are not supported.**
 
-## Status
+**Install guide for players:** [Docs/INSTALL.md](Docs/INSTALL.md)
 
-| Phase | Scope |
-|-------|--------|
-| **Phase 0** | Manual GW2 compatibility testing |
-| **Phase 1** | GW2Kit library + Wine runtime build pipeline + app scaffold |
-| **Phase 2** | Setup wizard, home launcher UI, prefix create/repair flows |
-| **Phase 3** | In-app runtime downloader, Gw2Setup wizard, import existing install, GitHub releases |
-| **Phase 4+** | CI polish, notarization, auto-update notifications |
+---
 
-## Requirements
+## For players — quick overview
+
+You do **not** need Xcode, Homebrew, or to compile Wine yourself.
+
+1. **Download GW2onMac** from [GitHub Releases](https://github.com/Warzuponus/GW2onMac/releases)
+2. **Open the app** and follow the setup wizard
+3. **Install Rosetta 2** (one click in the app)
+4. **Download the Wine runtime** (one click — ~450 MB, hosted on GitHub)
+5. **Install Apple Game Porting Toolkit** and copy D3DMetal (see [INSTALL.md](Docs/INSTALL.md#step-4--install-apple-game-porting-toolkit-d3dmetal))
+6. **Create Prefix** → **Install GW2** → **Play**
+
+Full step-by-step instructions with links: **[Docs/INSTALL.md](Docs/INSTALL.md)**
+
+### Requirements
 
 - Apple Silicon Mac (M-series)
-- macOS Sonoma 14.0+
-- **Rosetta 2** (Wine x86_64 runs under Rosetta)
-- **Apple Game Porting Toolkit** with D3DMetal (user-installed; GW2 uses DirectX 11)
-- Xcode 16+ (to build the app)
+- macOS Sonoma 14.0 or newer
+- ~50 GB free disk space (game + runtime)
+- Free Apple Developer account (for GPTK download)
+- ArenaNet account (for Guild Wars 2)
 
-## Quick start (developers)
+---
 
-### 1. Install build dependencies
+## Pre-built downloads vs building from source
 
-**Apple Silicon (M-series):** Wine must be built as x86_64 using **x86_64 Homebrew** at `/usr/local` (separate from your normal `/opt/homebrew`):
+GW2onMac is designed so **players download pre-compiled artifacts** instead of building anything locally.
+
+| Component | Pre-built? | Where users get it |
+|-----------|------------|-------------------|
+| **Wine runtime** (`Libraries.tar.gz`) | Yes | In-app **Download Runtime** from [GitHub Releases](https://github.com/Warzuponus/GW2onMac/releases) |
+| **GW2onMac app** | Planned | GitHub Releases (`.app` / `.dmg`) |
+| **D3DMetal (GPTK)** | No — user must install | [Apple Developer](https://developer.apple.com/games/game-porting-toolkit/) |
+| **Guild Wars 2** | No — user must install | ArenaNet via in-app **Install GW2** |
+
+### Why not bundle everything?
+
+- **D3DMetal** is Apple proprietary — we legally cannot ship it inside GW2onMac.
+- **Guild Wars 2** is ArenaNet’s game — users install it with ArenaNet’s installer.
+- **Wine runtime** *can* be pre-built and hosted (LGPL source available in this repo). That is what the `runtime-v*` GitHub releases provide.
+
+### Downsides of pre-built releases (and how we handle them)
+
+| Concern | Impact | Mitigation |
+|---------|--------|------------|
+| Large download (~450 MB runtime) | Slow on slow connections | In-app downloader with progress; host on GitHub Releases CDN |
+| macOS Gatekeeper | “Unidentified developer” warning without signing | Code signing + notarization (planned) |
+| Trust | Users must trust release artifacts | Open source, reproducible CI builds, checksums in release notes |
+| GPTK still manual | Biggest remaining friction for non-technical users | Detailed [INSTALL.md](Docs/INSTALL.md) with copy-paste paths |
+| Updates | Old runtimes may break | In-app **Update Runtime** when a newer release is published |
+| GPL/LGPL compliance | Must offer source | This repo + CrossOver FOSS source links in [NOTICES.md](NOTICES.md) |
+
+**Bottom line:** Requiring users to compile Wine locally would exclude most players. Pre-built runtime + app releases are the right model; the main unavoidable manual step is installing Apple’s GPTK.
+
+---
+
+## For developers
+
+### Build the app
 
 ```bash
-./Scripts/install-x86_64-build-deps.sh
-```
-
-If you don't have x86_64 Homebrew yet, the script will print the one-time install command.
-
-**Intel Mac:**
-
-```bash
-./Scripts/install-build-deps.sh
-```
-
-### 2. Build the Wine runtime
-
-```bash
-./Scripts/build-wine-runtime.sh
-```
-
-On Apple Silicon this automatically re-launches under Rosetta.
-
-This downloads `crossover-sources-26.2.0.tar.gz`, compiles Wine 11, and outputs:
-
-- `dist/Libraries.tar.gz`
-- `dist/GW2onMacWineVersion.plist`
-
-See [Docs/RUNTIME.md](Docs/RUNTIME.md) for dependencies and troubleshooting.
-
-### 3. Build the app
-
-```bash
+git clone https://github.com/Warzuponus/GW2onMac.git
+cd GW2onMac
 open GW2onMac.xcodeproj
-# Set your Development Team, then Build & Run
+# Set Development Team, then Build & Run
 ```
 
-Or:
+### Build the Wine runtime locally (optional)
+
+Only needed if you are hacking on Wine or testing before a release. On Apple Silicon:
 
 ```bash
-xcodebuild -project GW2onMac.xcodeproj -scheme GW2onMac -configuration Debug build
+./Scripts/install-x86_64-build-deps.sh   # once — x86_64 Homebrew at /usr/local
+./Scripts/build-wine-runtime.sh          # 30–90 minutes
 ```
 
-### 4. Install runtime (in-app or manual)
+Output: `dist/Libraries.tar.gz` + `dist/GW2onMacWineVersion.plist`
 
-**In-app (recommended):** Launch GW2onMac and click **Download Runtime** in the setup wizard.
+See [Docs/RUNTIME.md](Docs/RUNTIME.md) for build troubleshooting.
 
-**Manual / local build:**
+### Publish an app release (maintainers)
 
 ```bash
-export GW2ONMAC_WINE_RUNTIME_URL="file://$(pwd)/dist/Libraries.tar.gz"
-export GW2ONMAC_WINE_VERSION_URL="file://$(pwd)/dist/GW2onMacWineVersion.plist"
+git tag v0.1.0
+git push origin v0.1.0
 ```
 
-Or extract directly:
+GitHub Actions builds `GW2onMac-0.1.0.dmg` and attaches it to the release. See [Docs/CODESIGNING.md](Docs/CODESIGNING.md) for signing and notarization.
 
-```bash
-mkdir -p ~/Library/Application\ Support/com.gw2onmac.app
-tar -xzf dist/Libraries.tar.gz -C ~/Library/Application\ Support/com.gw2onmac.app
-```
-
-Set `GW2ONMAC_GITHUB_REPO=yourname/GW2onMac` so the app downloads from your GitHub releases once published.
-
-**Legacy installs:** If you previously used the development name *TyriaSilicon* (`com.tyriasilicon.app`), GW2onMac detects that runtime and prefix automatically — no migration required.
-
-### 5. Create GW2 prefix & install game
-
-1. Launch **GW2onMac** → complete the setup wizard
-2. **Create Prefix**, then **Install GW2** (downloads and launches `Gw2Setup-64.exe`), or **Import** an existing install folder
-3. Optional fonts: `./Scripts/gw2-winetricks.sh`
-
-### GitHub releases (maintainers)
-
-Tag a release to build and publish the Wine runtime:
+### Publish a runtime release (maintainers)
 
 ```bash
 git tag runtime-v0.1.0
 git push origin runtime-v0.1.0
 ```
 
-The `release-runtime` workflow uploads `Libraries.tar.gz` and `GW2onMacWineVersion.plist` to GitHub Releases. Users download via the in-app **Download Runtime** button once `GW2ONMAC_GITHUB_REPO` points at your repo.
+GitHub Actions builds and attaches `Libraries.tar.gz` to the release. Users download it through the app automatically.
+
+---
 
 ## Project layout
 
 ```
 GW2onMac/
-├── GW2Kit/                 # Swift package (Wine launcher core, forked from Whisky)
+├── GW2Kit/                 # Swift package (Wine launcher core)
 ├── GW2onMac/               # SwiftUI app
-├── Scripts/
-│   ├── build-wine-runtime.sh
-│   └── gw2-winetricks.sh
+├── Scripts/                # Wine build + prefix helpers
 ├── Docs/
-│   └── RUNTIME.md
-└── dist/                   # build output (gitignored)
+│   ├── INSTALL.md          # Player installation guide
+│   └── RUNTIME.md          # Wine runtime build guide
+└── .github/workflows/      # CI + release automation
 ```
 
 ## GW2-specific defaults
 
-Built into `GW2Profile`:
+- 64-bit Wine prefix (Windows 10)
+- DirectX 11 via D3DMetal
+- Performance tuning for Apple Silicon (msync, Retina off, AVX under Rosetta)
 
-- 64-bit prefix (`WINEARCH=win64`, Windows 10)
-- `WINEDEBUG=-all` (prevents fixme memory leak)
-- `WINEMSYNC` + esync workaround for D3DMetal
-- `ROSETTA_ADVERTISE_AVX=1` on Apple Silicon (better CPU paths under Rosetta)
-- `RetinaMode=n` in winemac (avoid 2× render resolution on Retina displays)
-- Launcher: `Gw2-64.exe` at `C:\Program Files\Guild Wars 2\`
-
-### Performance tuning
-
-GW2onMac applies performance defaults automatically when you create a prefix or launch the app. To re-apply manually:
-
-```bash
-./Scripts/apply-gw2-performance.sh
-```
-
-See [Docs/RUNTIME.md](Docs/RUNTIME.md#performance) for in-game graphics settings that help on 16 GB Macs.
+See [Docs/RUNTIME.md](Docs/RUNTIME.md#performance) for in-game graphics tips on 16 GB Macs.
 
 ## License
 
-GW2onMac application code is **GPL-3.0** (derived from [Whisky](https://github.com/Whisky-App/Whisky)). See [LICENSE](LICENSE) and [NOTICES.md](NOTICES.md) for Wine, CrossOver source, and Apple GPTK attribution.
+GW2onMac application code is **GPL-3.0** (derived from [Whisky](https://github.com/Whisky-App/Whisky)). See [LICENSE](LICENSE) and [NOTICES.md](NOTICES.md).
 
 ## Credits
 
 - [Whisky](https://github.com/Whisky-App/Whisky) — SwiftUI Wine wrapper patterns
 - [CodeWeavers](https://www.codeweavers.com/) — CrossOver FOSS Wine sources (LGPL)
-- [Apple Game Porting Toolkit](https://developer.apple.com/games/game-porting-toolkit/) — D3DMetal (user-installed, proprietary)
+- [Apple Game Porting Toolkit](https://developer.apple.com/games/game-porting-toolkit/) — D3DMetal (user-installed)

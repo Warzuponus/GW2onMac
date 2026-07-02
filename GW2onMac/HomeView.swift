@@ -25,11 +25,6 @@ struct HomeView: View {
                     .foregroundStyle(.secondary)
             }
 
-            statusRow("Wine runtime", ok: appState.isRuntimeInstalled)
-            statusRow("D3DMetal (GPTK)", ok: appState.isD3DMetalAvailable, hint: "Install Apple Game Porting Toolkit")
-            statusRow("GW2 prefix", ok: appState.hasPrefix)
-            statusRow("Game installed", ok: gw2Installed, hint: "Install or import Guild Wars 2")
-
             runtimeActions
             gw2InstallActions
 
@@ -154,20 +149,6 @@ struct HomeView: View {
         Text("Finish installing Guild Wars 2 to enable Play.")
             .font(.callout)
             .foregroundStyle(.secondary)
-    }
-
-    @ViewBuilder
-    private func statusRow(_ title: String, ok: Bool, hint: String = "") -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: ok ? "checkmark.circle.fill" : "xmark.circle")
-                .foregroundStyle(ok ? .green : .secondary)
-            Text(title)
-            if !ok, !hint.isEmpty {
-                Text("— \(hint)")
-                    .foregroundStyle(.secondary)
-                    .font(.callout)
-            }
-        }
     }
 
     private func loadLaunchArguments() {
