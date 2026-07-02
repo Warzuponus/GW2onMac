@@ -78,7 +78,7 @@ When available, download the latest **`GW2onMac`** release from:
 **https://github.com/Warzuponus/GW2onMac/releases**
 
 1. Open the newest release.
-2. Download **`GW2onMac-0.1.1.dmg`** (or the latest **`GW2onMac-*.dmg`** from [Releases](https://github.com/Warzuponus/GW2onMac/releases)).
+2. Download **`GW2onMac-0.1.2.dmg`** (or the latest **`GW2onMac-*.dmg`** from [Releases](https://github.com/Warzuponus/GW2onMac/releases)).
 3. Open the DMG and drag **GW2onMac** to **Applications**.
 4. Follow [macOS security warning (expected)](#macos-security-warning-expected) above to open the app the first time.
 
@@ -120,32 +120,45 @@ The app stores the runtime at:
 
 ## Step 4 — Install Apple Game Porting Toolkit (D3DMetal)
 
-Guild Wars 2 uses **DirectX 11**. On Mac, that requires Apple’s **D3DMetal** libraries from the Game Porting Toolkit. GW2onMac cannot bundle these files — you must install them yourself under Apple’s license.
+Guild Wars 2 uses **DirectX 11**. On Mac, that requires Apple’s **D3DMetal** libraries from the Game Porting Toolkit. GW2onMac cannot bundle these files — you must download them from Apple under their license, but the app can install them for you.
 
 ### 4a. Download GPTK from Apple
 
-1. Sign in at **https://developer.apple.com/download/all/**
+1. Sign in at **https://developer.apple.com/download/all/** (free Apple Developer account)
 2. Search for **Game Porting Toolkit**
-3. Download the latest **Game Porting Toolkit** `.dmg` for macOS (4.x recommended)
+3. Download **Game Porting Toolkit 4.x** (e.g. `Game_Porting_Toolkit_4.0_1_beta_1.dmg`)
+4. Double-click the downloaded `.dmg` to open it in Finder (leave it open)
 
-### 4b. Install D3DMetal into the Wine runtime
+### 4b. Install with GW2onMac (recommended)
 
-After installing GPTK, copy **D3DMetal** into GW2onMac’s Wine folder:
+1. Complete **Step 3** (Wine runtime) first.
+2. In the setup wizard, on the **D3DMetal (GPTK)** row, click **Install GPTK**.
+3. If auto-detect does not find your download, click **Choose File…** and select the GPTK `.dmg`.
+4. Enter your Mac password when prompted — GW2onMac installs **Metal Shader Converter** and copies **D3DMetal.framework** into the Wine runtime.
+5. The step should show a green checkmark when finished.
 
-1. Open Finder.
-2. Press **Cmd + Shift + G** and paste:
+GW2onMac looks for GPTK on mounted volumes (e.g. `/Volumes/Game Porting Toolkit`) and in **Downloads**.
 
-   `~/Library/Application Support/com.gw2onmac.app/Libraries/Wine/lib/external/`
+### 4c. Manual install (advanced)
 
-3. Create the `external` folder if it does not exist.
-4. Copy **`D3DMetal.framework`** from your GPTK installation into that `external` folder.
+If you prefer to install by hand, see the table below. You only need **Metal Shader Converter** and **D3DMetal.framework** — not the full evaluation Wine environment.
 
-Typical GPTK install locations (one of these usually exists):
+| Item in the GPTK folder | Needed for GW2onMac? |
+|-------------------------|----------------------|
+| **Evaluation environment for Windows games … .dmg** | **Yes** — contains `D3DMetal.framework` at `redist/lib/external/` |
+| **Metal Shader Converter … .pkg** | **Yes (recommended)** |
+| Mac Remote Developer Tools … .pkg | No |
+| `gptk-sample`, `metal-cpp` | No |
 
-- `/Library/Apple/Game Porting Toolkit/D3DMetal.framework`
-- Inside the mounted GPTK `.dmg` under a `D3DMetal` or `lib` folder
+Copy destination:
 
-5. Return to GW2onMac and click **Refresh**. The **D3DMetal (GPTK)** step should show a checkmark.
+`~/Library/Application Support/com.gw2onmac.app/Libraries/Wine/lib/external/D3DMetal.framework`
+
+You can also run the bundled helper script from Terminal:
+
+```bash
+"/Applications/GW2onMac.app/Contents/Resources/install-gptk.sh"
+```
 
 ### Alternative: Homebrew (advanced)
 

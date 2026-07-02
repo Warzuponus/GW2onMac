@@ -20,7 +20,7 @@ You do **not** need Xcode, Homebrew, or to compile Wine yourself.
 3. **Open the app** and follow the setup wizard
 4. **Install Rosetta 2** (one click in the app)
 5. **Download the Wine runtime** (one click — ~450 MB, hosted on GitHub)
-6. **Install Apple Game Porting Toolkit** and copy D3DMetal (see [INSTALL.md](Docs/INSTALL.md#step-4--install-apple-game-porting-toolkit-d3dmetal))
+6. **Download Game Porting Toolkit 4.x from Apple**, then click **Install GPTK** in the setup wizard (see [INSTALL.md](Docs/INSTALL.md#step-4--install-apple-game-porting-toolkit-d3dmetal))
 7. **Create Prefix** → **Install GW2** → **Play**
 
 Full step-by-step instructions with links: **[Docs/INSTALL.md](Docs/INSTALL.md)**
@@ -43,7 +43,7 @@ GW2onMac is designed so **players download pre-compiled artifacts** instead of b
 |-----------|------------|-------------------|
 | **Wine runtime** (`Libraries.tar.gz`) | Yes | In-app **Download Runtime** from [GitHub Releases](https://github.com/Warzuponus/GW2onMac/releases) |
 | **GW2onMac app** | Yes | GitHub Releases (`GW2onMac-*.dmg`) — unsigned |
-| **D3DMetal (GPTK)** | No — user must install | [Apple Developer](https://developer.apple.com/games/game-porting-toolkit/) |
+| **D3DMetal (GPTK)** | Download from Apple; one-click install in app | [Apple Developer](https://developer.apple.com/games/game-porting-toolkit/) |
 | **Guild Wars 2** | No — user must install | ArenaNet via in-app **Install GW2** |
 
 ### Why not bundle everything?
@@ -59,11 +59,11 @@ GW2onMac is designed so **players download pre-compiled artifacts** instead of b
 | Large download (~450 MB runtime) | Slow on slow connections | In-app downloader with progress; host on GitHub Releases CDN |
 | macOS Gatekeeper | “Unidentified developer” warning — **expected** | GW2onMac is unsigned; see [INSTALL.md](Docs/INSTALL.md#macos-security-warning-expected) |
 | Trust | Users must trust release artifacts | Open source, reproducible CI builds, checksums in release notes |
-| GPTK still manual | Biggest remaining friction for non-technical users | Detailed [INSTALL.md](Docs/INSTALL.md) with copy-paste paths |
+| GPTK install | User downloads from Apple; app auto-installs D3DMetal | **Install GPTK** button in setup wizard |
 | Updates | Old runtimes may break | In-app **Update Runtime** when a newer release is published |
 | GPL/LGPL compliance | Must offer source | This repo + CrossOver FOSS source links in [NOTICES.md](NOTICES.md) |
 
-**Bottom line:** Requiring users to compile Wine locally would exclude most players. Pre-built runtime + app releases are the right model; the main unavoidable manual step is installing Apple’s GPTK.
+**Bottom line:** Requiring users to compile Wine locally would exclude most players. Pre-built runtime + app releases are the right model; the only manual GPTK step is downloading Apple's disk image (license requirement).
 
 ---
 

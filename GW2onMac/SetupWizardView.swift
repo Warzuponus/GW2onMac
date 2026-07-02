@@ -12,6 +12,7 @@ struct SetupWizardView: View {
     @State private var statusMessage = ""
     @State private var isBusy = false
     @State private var showImportPicker = false
+    @State private var showGPTKFilePicker = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -31,7 +32,7 @@ struct SetupWizardView: View {
 
             HStack {
                 Button("Refresh") { appState.refresh() }
-                    .disabled(isBusy || appState.isRuntimeBusy || appState.isGW2InstallBusy)
+                    .disabled(isBusy || appState.isRuntimeBusy || appState.isGW2InstallBusy || appState.isGPTKInstallBusy)
 
                 Spacer()
 
@@ -58,6 +59,19 @@ struct SetupWizardView: View {
             case .success(let urls):
                 guard let folder = urls.first else { return }
                 Task { await appState.importExistingInstall(from: folder) }
+            case .failure(let error):
+                statusMessage = error.localizedDescription
+            }
+        }
+        .fileImporter(
+            isPresented: $showGPTKFilePicker,
+            allowedContentTypes: [UTType(filenameExtension: "dmg")!],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                guard let dmg = urls.first else { return }
+                Task { await appState.installGPTK(from: dmg) }
             case .failure(let error):
                 statusMessage = error.localizedDescription
             }
@@ -150,16 +164,89 @@ struct SetupWizardView: View {
                 stepIcon(ok: appState.isD3DMetalAvailable)
                 Text("D3DMetal (GPTK)")
                     .font(.headline)
+                Spacer()
+                if !appState.isD3DMetalAvailable {
+                    Button("Install GPTK") {
+                        Task { await appState.installGPTK() }
+                    }
+                    .disabled(
+                        !appState.isRuntimeInstalled
+                            || appState.isGPTKInstallBusy
+                            || appState.isRuntimeBusy
+                    )
+
+                    Button("Choose File…") {
+                        showGPTKFilePicker = true
+                    }
+                    .disabled(
+                        !appState.isRuntimeInstalled
+                            || appState.isGPTKInstallBusy
+                            || appState.isRuntimeBusy
+                    )
+                }
             }
-            Text("Install Apple Game Porting Toolkit 4.x, then copy D3DMetal.framework into the Wine runtime. Full instructions:")
+
+            gptkInstallProgress
+
+            Text(gptkDetail)
                 .font(.callout)
                 .foregroundStyle(.secondary)
-            Link("GPTK install guide (GitHub)",
-                 destination: URL(string: "https://github.com/Warzuponus/GW2onMac/blob/main/Docs/INSTALL.md#step-4--install-apple-game-porting-toolkit-d3dmetal")!)
-                .font(.callout)
-            Text("After copying D3DMetal, click Refresh above.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if !appState.isD3DMetalAvailable {
+                Link("Download Game Porting Toolkit 4.x from Apple",
+                     destination: GPTKInstaller.appleDownloadPage)
+                    .font(.callout)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var gptkInstallProgress: some View {
+        switch appState.gptkInstallPhase {
+        case .working(let step):
+            ProgressView(gptkStepMessage(step))
+        case .failed(let message):
+            VStack(alignment: .leading, spacing: 4) {
+                Text(message)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button("Dismiss") { appState.resetGPTKInstallPhase() }
+                    .font(.caption)
+            }
+        default:
+            EmptyView()
+        }
+    }
+
+    private var gptkDetail: String {
+        if appState.isD3DMetalAvailable {
+            return "D3DMetal is installed for DirectX 11."
+        }
+        if !appState.isRuntimeInstalled {
+            return "Download the Wine runtime first, then install GPTK."
+        }
+        return """
+        Download Game Porting Toolkit 4.x from Apple (free developer account). Open the .dmg, then click \
+        Install GPTK — GW2onMac will find it on your Mac, install Metal Shader Converter, and copy D3DMetal.
+        """
+    }
+
+    private func gptkStepMessage(_ step: GPTKInstallStep) -> String {
+        switch step {
+        case .searching:
+            return "Looking for Game Porting Toolkit…"
+        case .mountingDMG(let name):
+            return "Mounting \(name)…"
+        case .installingShaderConverter:
+            return "Installing Metal Shader Converter (admin password may be required)…"
+        case .mountingEvaluationEnvironment:
+            return "Opening evaluation environment…"
+        case .copyingD3DMetal:
+            return "Copying D3DMetal.framework…"
+        case .complete:
+            return "GPTK install complete."
         }
     }
 

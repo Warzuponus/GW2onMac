@@ -25,11 +25,19 @@ enum GW2InstallPhase: Equatable {
     case failed(String)
 }
 
+enum GPTKInstallPhase: Equatable {
+    case idle
+    case working(GPTKInstallStep)
+    case complete
+    case failed(String)
+}
+
 @MainActor
 final class AppState: ObservableObject {
     @Published var bottleManager = GW2BottleManager.shared
     @Published var runtimeInstallPhase: RuntimeInstallPhase = .idle
     @Published var gw2InstallPhase: GW2InstallPhase = .idle
+    @Published var gptkInstallPhase: GPTKInstallPhase = .idle
     @Published var runtimeUpdateAvailable: SemanticVersion?
     /// When true, show the setup wizard even if the user could use the launcher.
     @Published var showSetupWizard = false
@@ -52,6 +60,13 @@ final class AppState: ObservableObject {
     var isGW2InstallBusy: Bool {
         switch gw2InstallPhase {
         case .downloading, .launching, .waitingForGame, .importing: true
+        default: false
+        }
+    }
+
+    var isGPTKInstallBusy: Bool {
+        switch gptkInstallPhase {
+        case .working: true
         default: false
         }
     }
@@ -187,5 +202,32 @@ final class AppState: ObservableObject {
 
     func resetGW2InstallPhase() {
         gw2InstallPhase = .idle
+    }
+
+    func resetGPTKInstallPhase() {
+        gptkInstallPhase = .idle
+    }
+
+    func installGPTK(from source: URL? = nil) async {
+        guard !isGPTKInstallBusy else { return }
+
+        gptkInstallPhase = .working(.searching)
+
+        let accessed = source?.startAccessingSecurityScopedResource() ?? false
+        defer {
+            if accessed, let source { source.stopAccessingSecurityScopedResource() }
+        }
+
+        do {
+            try await GPTKInstaller.install(from: source) { [weak self] step in
+                Task { @MainActor in
+                    self?.gptkInstallPhase = .working(step)
+                }
+            }
+            gptkInstallPhase = .complete
+            refresh()
+        } catch {
+            gptkInstallPhase = .failed(error.localizedDescription)
+        }
     }
 }
