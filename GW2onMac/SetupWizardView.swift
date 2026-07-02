@@ -13,6 +13,7 @@ struct SetupWizardView: View {
     @State private var isBusy = false
     @State private var showImportPicker = false
     @State private var showGPTKFilePicker = false
+    @State private var showRuntimeImportPicker = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -50,6 +51,19 @@ struct SetupWizardView: View {
         }
         .padding(24)
         .frame(minWidth: 520, minHeight: 520)
+        .fileImporter(
+            isPresented: $showRuntimeImportPicker,
+            allowedContentTypes: [UTType(filenameExtension: "gz")!, .data, .archive],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                guard let tarball = urls.first else { return }
+                Task { await appState.importRuntime(from: tarball) }
+            case .failure(let error):
+                statusMessage = error.localizedDescription
+            }
+        }
         .fileImporter(
             isPresented: $showImportPicker,
             allowedContentTypes: [.folder],
@@ -150,6 +164,10 @@ struct SetupWizardView: View {
                 if !appState.isRuntimeInstalled {
                     Button("Download Runtime") {
                         Task { await appState.downloadAndInstallRuntime() }
+                    }
+                    .disabled(appState.isRuntimeBusy)
+                    Button("Import Runtime…") {
+                        showRuntimeImportPicker = true
                     }
                     .disabled(appState.isRuntimeBusy)
                 } else if appState.runtimeUpdateAvailable != nil {
@@ -364,10 +382,10 @@ struct SetupWizardView: View {
             return "Wine runtime is installed."
         }
         return """
-        Download the Wine 11 runtime built from CrossOver FOSS sources (~450 MB).
+        Download the Wine 11 runtime (~450 MB), or Import Runtime… with Libraries.tar.gz \
+        (AirDrop from the dev Mac if GitHub download fails).
 
         Legacy TyriaSilicon installs at com.tyriasilicon.app are detected automatically.
-        Override URLs with GW2ONMAC_WINE_RUNTIME_URL for local testing.
         """
     }
 

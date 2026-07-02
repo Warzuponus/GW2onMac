@@ -144,6 +144,39 @@ final class AppState: ObservableObject {
             runtimeUpdateAvailable = nil
             refresh()
         } catch {
+            let hint = """
+            Download failed with HTTP status 404. If the GitHub repo is private, use Import Runtime… \
+            with Libraries.tar.gz from the dev machine (AirDrop), or make the repo public again.
+            """
+            let message = error.localizedDescription.contains("404")
+                ? "\(error.localizedDescription)\n\n\(hint)"
+                : error.localizedDescription
+            runtimeInstallPhase = .failed(message)
+        }
+    }
+
+    func importRuntime(from tarball: URL) async {
+        guard !isRuntimeBusy else { return }
+
+        do {
+            try await ensureRosettaInstalled()
+        } catch {
+            runtimeInstallPhase = .failed(error.localizedDescription)
+            return
+        }
+
+        let accessed = tarball.startAccessingSecurityScopedResource()
+        defer {
+            if accessed { tarball.stopAccessingSecurityScopedResource() }
+        }
+
+        runtimeInstallPhase = .extracting
+        do {
+            try WineRuntimeInstaller.install(from: tarball)
+            runtimeInstallPhase = .complete
+            runtimeUpdateAvailable = nil
+            refresh()
+        } catch {
             runtimeInstallPhase = .failed(error.localizedDescription)
         }
     }
