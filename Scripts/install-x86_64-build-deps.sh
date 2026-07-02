@@ -74,7 +74,8 @@ brew install \
   molten-vk \
   sdl2 \
   libpng \
-  jpeg-turbo
+  jpeg-turbo \
+  winetricks
 
 log "Done. Verify:"
 command -v pkg-config

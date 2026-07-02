@@ -58,6 +58,9 @@ public final class GW2BottleManager: ObservableObject, @unchecked Sendable {
         let wineVer = try await Wine.wineVersion()
         newBottle.settings.wineVersion = SemanticVersion(wineVer) ?? SemanticVersion(0, 0, 0)
         try newBottle.settings.encode(to: newBottle.url.appending(path: "Metadata").appendingPathExtension("plist"))
+
+        try await GW2FontInstaller.installFonts(into: newBottle)
+
         newBottle.inFlight = false
         newBottle.isAvailable = true
 
@@ -68,7 +71,18 @@ public final class GW2BottleManager: ObservableObject, @unchecked Sendable {
         return bottle
     }
 
-    /// Apply Retina/AVX tuning to an existing prefix (safe to run repeatedly).
+    /// Apply Retina/AVX tuning and GW2 fonts before launching the game.
+    @MainActor
+    public func prepareForLaunch() async throws {
+        guard let bottle, bottle.isAvailable else { return }
+
+        await applyPerformanceTuningIfNeeded()
+
+        if !GW2FontInstaller.areFontsInstalled(in: bottle) {
+            try await GW2FontInstaller.installFonts(into: bottle)
+        }
+    }
+
     @MainActor
     public func applyPerformanceTuningIfNeeded() async {
         guard let bottle, bottle.isAvailable else { return }

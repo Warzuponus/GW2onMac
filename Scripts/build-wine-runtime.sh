@@ -212,6 +212,9 @@ cp -R "$WINE_PREFIX/share" "$LIBRARY_LAYOUT/Wine/"
 if command -v winetricks >/dev/null 2>&1; then
   mkdir -p "$LIBRARY_LAYOUT"
   cp "$(command -v winetricks)" "$LIBRARY_LAYOUT/winetricks"
+elif [[ -x "$ROOT/Scripts/winetricks" ]]; then
+  mkdir -p "$LIBRARY_LAYOUT"
+  cp "$ROOT/Scripts/winetricks" "$LIBRARY_LAYOUT/winetricks"
 fi
 
 # Wine 11 ships a single `wine` loader (wine64 was removed). GW2Kit/Whisky expect wine64.

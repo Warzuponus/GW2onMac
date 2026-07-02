@@ -253,6 +253,14 @@ public class Wine {
         }
     }
 
+    /// Environment used when spawning Wine/winetricks for a bottle.
+    public static func constructLaunchEnvironment(
+        for bottle: Bottle,
+        additional: [String: String] = [:]
+    ) -> [String: String] {
+        constructWineEnvironment(for: bottle, environment: additional)
+    }
+
     /// Construct an environment merging the bottle values with the given values
     private static func constructWineEnvironment(
         for bottle: Bottle, environment: [String: String] = [:]

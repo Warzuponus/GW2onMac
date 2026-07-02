@@ -105,22 +105,44 @@ struct HomeView: View {
     }
 
     private func repairLauncher() {
-        guard let bottle = appState.bottleManager.bottle else { return }
-        if GW2Repair.clearLauncherLock(in: bottle) {
-            statusMessage = "Removed stale Gw2-64.tmp lock file."
-        } else {
-            statusMessage = "No empty lock files found — nothing to repair."
+        Task {
+            isBusy = true
+            defer { isBusy = false }
+            guard let bottle = appState.bottleManager.bottle else { return }
+            do {
+                try await appState.bottleManager.prepareForLaunch()
+                if GW2Repair.clearLauncherLock(in: bottle) {
+                    statusMessage = "Removed stale lock file and refreshed launcher fonts."
+                } else {
+                    statusMessage = "Launcher fonts and display settings refreshed."
+                }
+            } catch {
+                statusMessage = error.localizedDescription
+            }
         }
     }
 
     private func play() {
         saveLaunchArguments()
-        guard let program = appState.bottleManager.launcherProgram() else {
-            statusMessage = "Gw2-64.exe not found. Install Guild Wars 2 first."
-            return
+        Task {
+            isBusy = true
+            defer { isBusy = false }
+            do {
+                if let bottle = appState.bottleManager.bottle,
+                   !GW2FontInstaller.areFontsInstalled(in: bottle) {
+                    statusMessage = "Installing launcher fonts (first time only)…"
+                }
+                try await appState.bottleManager.prepareForLaunch()
+                guard let program = appState.bottleManager.launcherProgram() else {
+                    statusMessage = "Gw2-64.exe not found. Install Guild Wars 2 first."
+                    return
+                }
+                program.settings.arguments = launchArguments
+                program.run()
+                statusMessage = "Launching Guild Wars 2…"
+            } catch {
+                statusMessage = error.localizedDescription
+            }
         }
-        program.settings.arguments = launchArguments
-        program.run()
-        statusMessage = "Launching Guild Wars 2…"
     }
 }
