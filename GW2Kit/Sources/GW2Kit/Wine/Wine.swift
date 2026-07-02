@@ -269,7 +269,9 @@ public class Wine {
             "WINEPREFIX": bottle.url.path
         ]
         result.merge(GW2Profile.environmentOverrides()) { _, new in new }
-        result.merge(WineRuntimeInstaller.d3dMetalEnvironmentOverrides()) { _, new in new }
+        result.merge(WineRuntimeInstaller.d3dMetalEnvironmentOverrides(
+            enableBackend: bottle.settings.d3dMetalBackend
+        )) { _, new in new }
         bottle.settings.environmentVariables(wineEnv: &result)
         applyNativeDyldLibraryPath(to: &result)
         guard !environment.isEmpty else { return result }

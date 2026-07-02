@@ -113,6 +113,8 @@ public struct BottleMetalConfig: Codable, Equatable {
     var metalHud: Bool = false
     var metalTrace: Bool = false
     var dxrEnabled: Bool = false
+    /// When true, sets `CX_ACTIVE_GRAPHICS_BACKEND=d3dmetal` (needed for in-game DX11; breaks CEF launcher UI).
+    var d3dMetalBackend: Bool = false
 
     public init() {}
 
@@ -121,6 +123,7 @@ public struct BottleMetalConfig: Codable, Equatable {
         self.metalHud = try container.decodeIfPresent(Bool.self, forKey: .metalHud) ?? false
         self.metalTrace = try container.decodeIfPresent(Bool.self, forKey: .metalTrace) ?? false
         self.dxrEnabled = try container.decodeIfPresent(Bool.self, forKey: .dxrEnabled) ?? false
+        self.d3dMetalBackend = try container.decodeIfPresent(Bool.self, forKey: .d3dMetalBackend) ?? false
     }
 }
 
@@ -223,6 +226,12 @@ public struct BottleSettings: Codable, Equatable {
     public var dxrEnabled: Bool {
         get { return metalConfig.dxrEnabled }
         set { metalConfig.dxrEnabled = newValue }
+    }
+
+    /// Force D3DMetal as Wine's active graphics backend (in-game DirectX 11). Off by default for launcher UI.
+    public var d3dMetalBackend: Bool {
+        get { return metalConfig.d3dMetalBackend }
+        set { metalConfig.d3dMetalBackend = newValue }
     }
 
     public var dxvk: Bool {

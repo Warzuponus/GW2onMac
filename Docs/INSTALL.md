@@ -92,7 +92,7 @@ When available, download the latest **`GW2onMac`** release from:
 **https://github.com/Warzuponus/GW2onMac/releases**
 
 1. Open the newest release.
-2. Download **`GW2onMac-0.1.9.dmg`** (or the latest **`GW2onMac-*.dmg`** from [Releases](https://github.com/Warzuponus/GW2onMac/releases)).
+2. Download **`GW2onMac-0.1.10.dmg`** (or the latest **`GW2onMac-*.dmg`** from [Releases](https://github.com/Warzuponus/GW2onMac/releases)).
 3. Open the DMG and drag **GW2onMac** to **Applications**.
 4. Follow [macOS security warning (expected)](#macos-security-warning-expected) above to open the app the first time.
 
@@ -242,8 +242,9 @@ Run ArenaNet’s installer inside the Wine prefix using GW2onMac’s terminal mo
 | Problem | What to try |
 |---------|-------------|
 | “Wine runtime not installed” | Click **Download Runtime** again |
+| Launcher UI garbled / missing text / wrong click targets | **Turn off** “DirectX 11 in-game (D3DMetal backend)” — v0.1.6 forced this globally and breaks the CEF login UI. v0.1.10 defaults to off (like v0.1.5) |
+| “Unable to initialize 3D output” / DirectX 11 error **in-game** (after login) | Turn **on** “DirectX 11 in-game (D3DMetal backend)”, then **Play** again |
 | “Unable to initialize 3D output” / DirectX 11 error | Re-run **Install GPTK** (needs `libd3dshared.dylib` + D3DMetal.framework). Update to GW2onMac **v0.1.6+** |
-| Launcher opens but text/fields are missing or garbled | Likely a **D3DMetal / launcher UI** issue after the DX11 fix — not missing fonts. Try **Repair launcher**, then **Play**. Optional: `./Scripts/gw2-winetricks.sh` |
 | `winetricks` / font install errors on Play or Repair | **v0.1.9+** no longer blocks launch on font install. Update GW2onMac and click **Play** |
 | “D3DMetal not found” | Re-run **Install GPTK** or copy GPTK `redist/lib/external/` into Wine `lib/external/` |
 | “Create Prefix” fails | Install Rosetta + D3DMetal first |

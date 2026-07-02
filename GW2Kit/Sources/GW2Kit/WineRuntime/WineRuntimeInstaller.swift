@@ -175,17 +175,36 @@ public class WineRuntimeInstaller {
             && FileManager.default.fileExists(atPath: libd3dshared)
     }
 
-    /// CrossOver-style environment variables required for D3DMetal on Apple Silicon.
-    public static func d3dMetalEnvironmentOverrides() -> [String: String] {
+    /// Path to bundled `libd3dshared.dylib` (always safe to set when GPTK is installed).
+    public static func d3dMetalLibraryOverrides() -> [String: String] {
         let libd3dshared = d3dMetalExternalFolder.appending(path: "libd3dshared.dylib")
         guard FileManager.default.fileExists(atPath: libd3dshared.path) else {
             return [:]
         }
 
         return [
-            "CX_ACTIVE_GRAPHICS_BACKEND": "d3dmetal",
             "CX_APPLEGPTK_LIBD3DSHARED_PATH": libd3dshared.path
         ]
+    }
+
+    /// Forces all Wine rendering through D3DMetal. Required for in-game DirectX 11 but breaks CEF launcher UI.
+    public static func d3dMetalBackendOverrides() -> [String: String] {
+        guard isBundledD3DMetalComplete() else {
+            return [:]
+        }
+
+        return [
+            "CX_ACTIVE_GRAPHICS_BACKEND": "d3dmetal"
+        ]
+    }
+
+    /// Library path + optional backend override (v0.1.6 applied both unconditionally and broke the launcher).
+    public static func d3dMetalEnvironmentOverrides(enableBackend: Bool) -> [String: String] {
+        var result = d3dMetalLibraryOverrides()
+        if enableBackend {
+            result.merge(d3dMetalBackendOverrides()) { _, new in new }
+        }
+        return result
     }
 }
 
