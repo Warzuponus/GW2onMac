@@ -175,7 +175,7 @@ public class WineRuntimeInstaller {
             && FileManager.default.fileExists(atPath: libd3dshared)
     }
 
-    /// Path to bundled `libd3dshared.dylib` (always safe to set when GPTK is installed).
+    /// Path to bundled `libd3dshared.dylib` (only when forcing the D3DMetal backend).
     public static func d3dMetalLibraryOverrides() -> [String: String] {
         let libd3dshared = d3dMetalExternalFolder.appending(path: "libd3dshared.dylib")
         guard FileManager.default.fileExists(atPath: libd3dshared.path) else {
@@ -187,7 +187,7 @@ public class WineRuntimeInstaller {
         ]
     }
 
-    /// Forces all Wine rendering through D3DMetal. Required for in-game DirectX 11 but breaks CEF launcher UI.
+    /// Forces all Wine rendering through D3DMetal. Breaks the CEF login UI; use only for in-game DirectX 11.
     public static func d3dMetalBackendOverrides() -> [String: String] {
         guard isBundledD3DMetalComplete() else {
             return [:]
@@ -198,12 +198,12 @@ public class WineRuntimeInstaller {
         ]
     }
 
-    /// Library path + optional backend override (v0.1.6 applied both unconditionally and broke the launcher).
+    /// CrossOver env vars — only when explicitly enabled. Original TyriaSilicon/scripts used none (GPTK on disk only).
     public static func d3dMetalEnvironmentOverrides(enableBackend: Bool) -> [String: String] {
+        guard enableBackend else { return [:] }
+
         var result = d3dMetalLibraryOverrides()
-        if enableBackend {
-            result.merge(d3dMetalBackendOverrides()) { _, new in new }
-        }
+        result.merge(d3dMetalBackendOverrides()) { _, new in new }
         return result
     }
 }

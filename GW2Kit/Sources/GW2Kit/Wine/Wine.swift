@@ -33,32 +33,15 @@ public class Wine {
         fileHandle: FileHandle?
     ) throws -> AsyncStream<ProcessOutput> {
         let process = Process()
-        let (execURL, processArgs) = rosettaWrappedExecutable(executableURL, arguments: args)
-        process.executableURL = execURL
-        process.arguments = processArgs
+        process.executableURL = executableURL
+        process.arguments = args
         process.currentDirectoryURL = directory ?? executableURL.deletingLastPathComponent()
         process.environment = environment
         process.qualityOfService = .userInitiated
 
         return try process.runStream(
-            name: name ?? processArgs.joined(separator: " "), fileHandle: fileHandle
+            name: name ?? args.joined(separator: " "), fileHandle: fileHandle
         )
-    }
-
-    /// Wine is x86_64; launch under Rosetta explicitly on Apple Silicon (matches shell scripts).
-    private static func rosettaWrappedExecutable(_ executableURL: URL, arguments: [String]) -> (URL, [String]) {
-        #if arch(arm64)
-        switch executableURL.lastPathComponent {
-        case "wine64", "wine", "wineserver":
-            return (
-                URL(fileURLWithPath: "/usr/bin/arch"),
-                ["-x86_64", executableURL.path(percentEncoded: false)] + arguments
-            )
-        default:
-            break
-        }
-        #endif
-        return (executableURL, arguments)
     }
 
     /// Run a `wine` process with the given arguments and environment variables returning a stream of output
@@ -265,9 +248,8 @@ public class Wine {
     private static func constructWineEnvironment(
         for bottle: Bottle, environment: [String: String] = [:]
     ) -> [String: String] {
-        var result: [String: String] = [
-            "WINEPREFIX": bottle.url.path
-        ]
+        var result = ProcessInfo.processInfo.environment
+        result["WINEPREFIX"] = bottle.url.path
         result.merge(GW2Profile.environmentOverrides()) { _, new in new }
         result.merge(WineRuntimeInstaller.d3dMetalEnvironmentOverrides(
             enableBackend: bottle.settings.d3dMetalBackend

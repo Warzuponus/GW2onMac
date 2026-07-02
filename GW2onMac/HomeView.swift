@@ -55,10 +55,13 @@ struct HomeView: View {
             }
 
             if appState.hasPrefix {
-                Toggle(isOn: d3dMetalBackendBinding) {
+                Toggle(isOn: Binding(
+                    get: { appState.d3dMetalBackendEnabled },
+                    set: { appState.setD3DMetalBackendEnabled($0) }
+                )) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("DirectX 11 in-game (D3DMetal backend)")
-                        Text("Leave off for a working login launcher (v0.1.5 behavior). Turn on if the game fails DirectX 11 after login.")
+                        Text("DirectX 11 in-game (D3DMetal env vars)")
+                        Text("Off = original TyriaSilicon launch (GPTK on disk only). On = v0.1.6 CrossOver env vars; fixes in-game DX11 but can break the login UI.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -79,7 +82,10 @@ struct HomeView: View {
         }
         .padding(24)
         .frame(minWidth: 520, minHeight: 480)
-        .onAppear { loadLaunchArguments() }
+        .onAppear {
+            loadLaunchArguments()
+            appState.syncD3DMetalBackendFromBottle()
+        }
     }
 
     @ViewBuilder
@@ -108,15 +114,6 @@ struct HomeView: View {
     private func loadLaunchArguments() {
         guard let program = appState.bottleManager.launcherProgram() else { return }
         launchArguments = program.settings.arguments
-    }
-
-    private var d3dMetalBackendBinding: Binding<Bool> {
-        Binding(
-            get: { appState.bottleManager.bottle?.settings.d3dMetalBackend ?? false },
-            set: { newValue in
-                appState.bottleManager.bottle?.settings.d3dMetalBackend = newValue
-            }
-        )
     }
 
     private func saveLaunchArguments() {
