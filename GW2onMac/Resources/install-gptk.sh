@@ -34,7 +34,29 @@ trap cleanup EXIT
 mount_dmg() {
   local dmg="$1"
   local mount
-  mount="$(hdiutil attach -plist -nobrowse -readonly "$dmg" | plutil -extract 0.mount-point raw -)"
+  mount="$(python3 - "$dmg" <<'PY'
+import plistlib, subprocess, sys
+
+dmg = sys.argv[1]
+proc = subprocess.run(
+    ["/usr/bin/hdiutil", "attach", "-plist", "-nobrowse", "-readonly", dmg],
+    capture_output=True,
+)
+if proc.returncode != 0:
+    sys.stderr.write(proc.stderr.decode())
+    sys.exit(proc.returncode)
+plist = plistlib.loads(proc.stdout)
+entities = plist.get("system-entities")
+if entities is None and isinstance(plist, list):
+    entities = plist
+for entity in entities or []:
+    mount_point = entity.get("mount-point")
+    if mount_point:
+        print(mount_point)
+        break
+PY
+)"
+  [[ -n "$mount" ]] || die "Could not read mount point from hdiutil for $dmg"
   MOUNTED+=("$mount")
   echo "$mount"
 }

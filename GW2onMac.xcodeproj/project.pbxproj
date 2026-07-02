@@ -14,6 +14,7 @@
 		A10000010000000000000005 /* SetupWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000007 /* SetupWizardView.swift */; };
 		A10000010000000000000006 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000008 /* HomeView.swift */; };
 		A10000010000000000000007 /* install-gptk.sh in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000009 /* install-gptk.sh */; };
+		A10000010000000000000008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000010 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +26,7 @@
 		A20000010000000000000007 /* SetupWizardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupWizardView.swift; sourceTree = "<group>"; };
 		A20000010000000000000008 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		A20000010000000000000009 /* install-gptk.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "install-gptk.sh"; sourceTree = "<group>"; };
+		A20000010000000000000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A30000010000000000000001 /* GW2onMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GW2onMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000010000000000000005 /* GW2Kit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = GW2Kit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -59,6 +61,7 @@
 				A20000010000000000000007 /* SetupWizardView.swift */,
 				A20000010000000000000008 /* HomeView.swift */,
 				A60000010000000000000004 /* Resources */,
+				A20000010000000000000010 /* Assets.xcassets */,
 				A20000010000000000000003 /* Info.plist */,
 				A20000010000000000000004 /* GW2onMac.entitlements */,
 			);
@@ -161,6 +164,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000010000000000000007 /* install-gptk.sh in Resources */,
+				A10000010000000000000008 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -202,6 +206,7 @@
 		AA0000010000000000000003 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = GW2onMac/GW2onMac.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -215,7 +220,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.1.3;
+				MARKETING_VERSION = 0.1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.gw2onmac.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -226,6 +231,7 @@
 		AA0000010000000000000004 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = GW2onMac/GW2onMac.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -239,7 +245,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.1.3;
+				MARKETING_VERSION = 0.1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.gw2onmac.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

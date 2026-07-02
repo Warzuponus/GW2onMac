@@ -300,26 +300,49 @@ public enum GPTKInstaller {
 
     private static func mountDiskImage(at url: URL) throws -> URL {
         let process = Process()
-        let pipe = Pipe()
+        let outPipe = Pipe()
+        let errPipe = Pipe()
         process.executableURL = hdiutilURL
         process.arguments = ["attach", "-plist", "-nobrowse", "-readonly", url.path]
-        process.standardOutput = pipe
-        process.standardError = Pipe()
+        process.standardOutput = outPipe
+        process.standardError = errPipe
 
         try process.run()
         process.waitUntilExit()
 
+        let outData = outPipe.fileHandleForReading.readDataToEndOfFile()
+        let errData = errPipe.fileHandleForReading.readDataToEndOfFile()
+
         guard process.terminationStatus == 0 else {
-            throw GPTKInstallerError.mountFailed(url.lastPathComponent)
+            let detail = String(data: errData, encoding: .utf8)?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            throw GPTKInstallerError.mountFailed(detail?.isEmpty == false ? detail! : url.lastPathComponent)
         }
 
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        guard let plist = try PropertyListSerialization.propertyList(from: data, format: nil) as? [[String: Any]],
-              let mountPoint = plist.compactMap({ $0["mount-point"] as? String }).first else {
+        guard let mountPoint = parseMountPoint(from: outData) else {
             throw GPTKInstallerError.mountFailed("Could not read mount point from hdiutil.")
         }
 
         return URL(fileURLWithPath: mountPoint, isDirectory: true)
+    }
+
+    /// `hdiutil attach -plist` returns `{ "system-entities": [...] }` on recent macOS; older releases used a top-level array.
+    private static func parseMountPoint(from data: Data) -> String? {
+        guard !data.isEmpty,
+              let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) else {
+            return nil
+        }
+
+        let entities: [[String: Any]]
+        if let dict = plist as? [String: Any], let systemEntities = dict["system-entities"] as? [[String: Any]] {
+            entities = systemEntities
+        } else if let legacy = plist as? [[String: Any]] {
+            entities = legacy
+        } else {
+            return nil
+        }
+
+        return entities.compactMap { $0["mount-point"] as? String }.first
     }
 
     private static func detachVolume(at mountPoint: URL) {
