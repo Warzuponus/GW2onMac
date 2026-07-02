@@ -296,10 +296,12 @@ public enum GPTKInstaller {
         }
     }
 
+    private static let hdiutilURL = URL(fileURLWithPath: "/usr/bin/hdiutil")
+
     private static func mountDiskImage(at url: URL) throws -> URL {
         let process = Process()
         let pipe = Pipe()
-        process.executableURL = URL(fileURLWithPath: "/usr/sbin/hdiutil")
+        process.executableURL = hdiutilURL
         process.arguments = ["attach", "-plist", "-nobrowse", "-readonly", url.path]
         process.standardOutput = pipe
         process.standardError = Pipe()
@@ -322,7 +324,7 @@ public enum GPTKInstaller {
 
     private static func detachVolume(at mountPoint: URL) {
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/sbin/hdiutil")
+        process.executableURL = hdiutilURL
         process.arguments = ["detach", mountPoint.path, "-quiet"]
         try? process.run()
         process.waitUntilExit()
