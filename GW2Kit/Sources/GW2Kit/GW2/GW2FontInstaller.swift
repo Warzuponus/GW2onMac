@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os.log
 
 public enum GW2FontInstallerError: LocalizedError {
     case winetricksMissing
@@ -89,12 +90,37 @@ public enum GW2FontInstaller {
             return true
         }
 
-        let arial = bottle.url
-            .appending(path: "drive_c/windows/Fonts/arial.ttf")
-        return FileManager.default.fileExists(atPath: arial.path)
+        let fontsDir = bottle.url.appending(path: "drive_c/windows/Fonts")
+        guard FileManager.default.fileExists(atPath: fontsDir.path) else {
+            return false
+        }
+
+        let fontFiles = (try? FileManager.default.contentsOfDirectory(atPath: fontsDir.path))?
+            .filter { $0.lowercased().hasSuffix(".ttf") || $0.lowercased().hasSuffix(".ttc") }
+            ?? []
+
+        // Prefixes that already ran GW2 successfully ship plenty of fonts from Wine/GW2.
+        if fontFiles.count >= 10 {
+            return true
+        }
+
+        return fontFiles.contains { $0.lowercased() == "arial.ttf" }
     }
 
-    /// Install corefonts + tahoma into the prefix (required for GW2 launcher text fields).
+    /// Best-effort font install. Returns a user-visible warning when install fails or is skipped.
+    public static func installFontsIfNeeded(into bottle: Bottle) async -> String? {
+        guard !areFontsInstalled(in: bottle) else { return nil }
+
+        do {
+            try await installFonts(into: bottle)
+            return nil
+        } catch {
+            Logger.gw2Kit.warning("Optional GW2 font install failed: \(error.localizedDescription, privacy: .public)")
+            return error.localizedDescription
+        }
+    }
+
+    /// Install corefonts + tahoma into the prefix (optional; launcher may already have fonts).
     public static func installFonts(into bottle: Bottle) async throws {
         if areFontsInstalled(in: bottle) {
             return

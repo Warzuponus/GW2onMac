@@ -37,9 +37,7 @@ public enum GW2Profile {
         [
             // GW2 Wiki: fixme spam causes memory leaks; silence all Wine debug output.
             "WINEDEBUG": "-all",
-            "WINEARCH": "win64",
-            // Improves Wine/FreeType font rendering on macOS (Arch Wiki / GW2 on Wine).
-            "FREETYPE_PROPERTIES": "truetype:interpreter-version=35"
+            "WINEARCH": "win64"
         ]
     }
 

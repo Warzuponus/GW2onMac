@@ -109,15 +109,18 @@ struct HomeView: View {
             isBusy = true
             defer { isBusy = false }
             guard let bottle = appState.bottleManager.bottle else { return }
-            do {
-                try await appState.bottleManager.prepareForLaunch()
-                if GW2Repair.clearLauncherLock(in: bottle) {
-                    statusMessage = "Removed stale lock file and refreshed launcher fonts."
-                } else {
-                    statusMessage = "Launcher fonts and display settings refreshed."
-                }
-            } catch {
-                statusMessage = error.localizedDescription
+
+            await appState.bottleManager.applyPerformanceTuningIfNeeded()
+            let fontWarning = await GW2FontInstaller.installFontsIfNeeded(into: bottle)
+
+            if GW2Repair.clearLauncherLock(in: bottle) {
+                statusMessage = "Removed stale lock file."
+            } else {
+                statusMessage = "Display settings refreshed."
+            }
+
+            if let fontWarning {
+                statusMessage += " Font install skipped: \(fontWarning)"
             }
         }
     }
@@ -127,21 +130,21 @@ struct HomeView: View {
         Task {
             isBusy = true
             defer { isBusy = false }
-            do {
-                if let bottle = appState.bottleManager.bottle,
-                   !GW2FontInstaller.areFontsInstalled(in: bottle) {
-                    statusMessage = "Installing launcher fonts (first time only)…"
-                }
-                try await appState.bottleManager.prepareForLaunch()
-                guard let program = appState.bottleManager.launcherProgram() else {
-                    statusMessage = "Gw2-64.exe not found. Install Guild Wars 2 first."
-                    return
-                }
-                program.settings.arguments = launchArguments
-                program.run()
+
+            let preparation = await appState.bottleManager.prepareForLaunch()
+
+            guard let program = appState.bottleManager.launcherProgram() else {
+                statusMessage = "Gw2-64.exe not found. Install Guild Wars 2 first."
+                return
+            }
+
+            program.settings.arguments = launchArguments
+            program.run()
+
+            if let fontWarning = preparation.fontInstallWarning {
+                statusMessage = "Launching Guild Wars 2… (font install skipped: \(fontWarning))"
+            } else {
                 statusMessage = "Launching Guild Wars 2…"
-            } catch {
-                statusMessage = error.localizedDescription
             }
         }
     }
