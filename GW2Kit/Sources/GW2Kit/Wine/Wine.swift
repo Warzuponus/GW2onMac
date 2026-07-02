@@ -33,15 +33,45 @@ public class Wine {
         fileHandle: FileHandle?
     ) throws -> AsyncStream<ProcessOutput> {
         let process = Process()
-        process.executableURL = executableURL
-        process.arguments = args
+        let (execURL, processArgs, processEnvironment) = rosettaEnvWrappedExecutable(
+            executableURL, arguments: args, environment: environment
+        )
+        process.executableURL = execURL
+        process.arguments = processArgs
         process.currentDirectoryURL = directory ?? executableURL.deletingLastPathComponent()
-        process.environment = environment
+        process.environment = processEnvironment
         process.qualityOfService = .userInitiated
 
         return try process.runStream(
-            name: name ?? args.joined(separator: " "), fileHandle: fileHandle
+            name: name ?? processArgs.joined(separator: " "), fileHandle: fileHandle
         )
+    }
+
+    /// Match Scripts/launch-gw2.sh: `arch -x86_64 env DYLD_LIBRARY_PATH=… wine64 …`
+    /// GUI apps cannot rely on Process.environment alone for DYLD_LIBRARY_PATH (macOS strips it).
+    private static func rosettaEnvWrappedExecutable(
+        _ executableURL: URL,
+        arguments: [String],
+        environment: [String: String]
+    ) -> (URL, [String], [String: String]?) {
+        #if arch(arm64)
+        switch executableURL.lastPathComponent {
+        case "wine64", "wine", "wineserver":
+            var envArgs: [String] = []
+            for (key, value) in environment.sorted(by: { $0.key < $1.key }) {
+                envArgs.append("\(key)=\(value)")
+            }
+            let execPath = executableURL.path(percentEncoded: false)
+            return (
+                URL(fileURLWithPath: "/usr/bin/arch"),
+                ["-x86_64", "/usr/bin/env"] + envArgs + [execPath] + arguments,
+                nil
+            )
+        default:
+            break
+        }
+        #endif
+        return (executableURL, arguments, environment)
     }
 
     /// Run a `wine` process with the given arguments and environment variables returning a stream of output
@@ -244,17 +274,25 @@ public class Wine {
         constructWineEnvironment(for: bottle, environment: additional)
     }
 
-    /// Construct an environment merging the bottle values with the given values
+    /// Construct an environment matching Scripts/launch-gw2.sh for a bottle.
     private static func constructWineEnvironment(
         for bottle: Bottle, environment: [String: String] = [:]
     ) -> [String: String] {
-        var result = ProcessInfo.processInfo.environment
+        var result: [String: String] = [:]
         result["WINEPREFIX"] = bottle.url.path
         result.merge(GW2Profile.environmentOverrides()) { _, new in new }
         result.merge(WineRuntimeInstaller.d3dMetalEnvironmentOverrides(
             enableBackend: bottle.settings.d3dMetalBackend
         )) { _, new in new }
         bottle.settings.environmentVariables(wineEnv: &result)
+
+        let wineBin = WineRuntimeInstaller.binFolder.path(percentEncoded: false)
+        if let existingPath = ProcessInfo.processInfo.environment["PATH"], !existingPath.isEmpty {
+            result["PATH"] = "\(wineBin):\(existingPath)"
+        } else {
+            result["PATH"] = wineBin
+        }
+
         applyNativeDyldLibraryPath(to: &result)
         guard !environment.isEmpty else { return result }
         result.merge(environment, uniquingKeysWith: { $1 })

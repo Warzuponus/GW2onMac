@@ -60,8 +60,8 @@ struct HomeView: View {
                     set: { appState.setD3DMetalBackendEnabled($0) }
                 )) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("DirectX 11 in-game (D3DMetal env vars)")
-                        Text("Off = original TyriaSilicon launch (GPTK on disk only). On = v0.1.6 CrossOver env vars; fixes in-game DX11 but can break the login UI.")
+                        Text("DirectX 11 fallback (CrossOver env vars)")
+                        Text("Leave off — v0.1.12 matches launch-gw2.sh. Only turn on if in-game DirectX 11 still fails after updating.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

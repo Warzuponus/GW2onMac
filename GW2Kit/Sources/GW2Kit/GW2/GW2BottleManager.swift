@@ -76,6 +76,7 @@ public final class GW2BottleManager: ObservableObject, @unchecked Sendable {
     public func prepareForLaunch() async -> GW2LaunchPreparation {
         guard let bottle, bottle.isAvailable else { return GW2LaunchPreparation() }
 
+        GW2RuntimePreparer.ensureNativeDylibsBundled()
         await applyPerformanceTuningIfNeeded()
 
         let fontWarning = await GW2FontInstaller.installFontsIfNeeded(into: bottle)
