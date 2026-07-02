@@ -26,7 +26,11 @@ public enum GW2SetupError: LocalizedError {
 
 /// Downloads and launches ArenaNet's GW2 installer inside the Wine prefix.
 public enum GW2SetupManager {
-    public static let setupDownloadURL = URL(string: "https://download.guildwars2.com/Gw2Setup-64.exe")!
+    /// Primary Gw2Setup download URL (first entry in `setupDownloadURLs`).
+    public static var setupDownloadURL: URL { setupDownloadURLs[0] }
+
+    /// ArenaNet CDN URLs for Gw2Setup-64.exe, tried in order until one succeeds.
+    public static var setupDownloadURLs: [URL] { ReleaseConfiguration.gw2SetupDownloadURLs }
 
     /// Path where Gw2Setup is stored inside the prefix (`C:\Gw2Setup-64.exe`).
     public static func setupURL(in bottle: Bottle) -> URL {
@@ -42,11 +46,21 @@ public enum GW2SetupManager {
         progress: (@Sendable (Double) -> Void)? = nil
     ) async throws {
         let destination = setupURL(in: bottle)
-        do {
-            try await HTTPDownload.download(from: setupDownloadURL, to: destination, progress: progress)
-        } catch {
-            throw GW2SetupError.downloadFailed(error.localizedDescription)
+        var lastError: String?
+
+        for url in setupDownloadURLs {
+            do {
+                try await HTTPDownload.download(from: url, to: destination, progress: progress)
+                return
+            } catch {
+                lastError = error.localizedDescription
+                if FileManager.default.fileExists(atPath: destination.path) {
+                    try? FileManager.default.removeItem(at: destination)
+                }
+            }
         }
+
+        throw GW2SetupError.downloadFailed(lastError ?? "All download URLs failed.")
     }
 
     /// Launch Gw2Setup-64.exe (non-blocking).

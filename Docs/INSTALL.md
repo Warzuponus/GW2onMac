@@ -26,18 +26,32 @@ GW2onMac is **open source** but **not code-signed** with an Apple Developer cert
 
 ### How to open GW2onMac
 
-On recent macOS versions, double-clicking or right-clicking **Open** often shows **“Apple could not verify GW2onMac is free of malware”** with **no Open button** in that dialog. That is expected. Use **System Settings** instead:
-
-**Method 1 — Privacy & Security (recommended — works on Sonoma and later)**
+On recent macOS versions (Sonoma, Sequoia, Tahoe), the first launch flow looks like this:
 
 1. Download and install from [GitHub Releases](https://github.com/Warzuponus/GW2onMac/releases) only.
 2. Open the DMG and drag **GW2onMac** to **Applications**.
-3. Double-click **GW2onMac** once (or try to open it). macOS blocks it — that is fine.
+3. Double-click **GW2onMac** in Applications.
+
+macOS shows a security dialog: **“Apple could not verify GW2onMac is free of malware.”**
+
+**Important — read the buttons carefully:**
+
+| Button | What to do |
+|--------|------------|
+| **Move to Trash** (large blue button) | **Do not click this** — it deletes the app |
+| **Done** (smaller button below) | **Click Done** — dismisses the dialog without deleting GW2onMac |
+
+After you click **Done**, the app will not open yet. That is expected. Continue with **System Settings**:
+
 4. Open **System Settings** → **Privacy & Security**.
-5. **Scroll down** past the top sections. Near the bottom you should see a message that **GW2onMac** was prevented from running.
-6. Click **Open Anyway** (or **Allow Anyway** on some versions).
-7. Confirm **Open** when macOS asks again.
-8. GW2onMac launches. You only need to do this once — after that, double-click works.
+5. **Scroll down** past the top sections. Near the bottom, look for a message that **GW2onMac** was blocked or prevented from opening.
+6. Click **Open Anyway** (wording may be **Allow Anyway** on some macOS versions).
+7. Confirm **Open** if macOS asks one more time.
+8. GW2onMac launches. You only need to do this once — after that, double-click works normally.
+
+**Method 1 — Privacy & Security (recommended — works on Sonoma and later)**
+
+Steps 1–8 above are the full recommended path. Right-click **Open** alone often does **not** work on newer macOS — you usually need **Privacy & Security → Open Anyway** after dismissing the first dialog with **Done**.
 
 **Method 2 — Right-click Open (may not work on all macOS versions)**
 
@@ -47,7 +61,7 @@ Some older macOS versions let you bypass Gatekeeper from the dialog:
 2. Choose **Open** from the menu (not double-click).
 3. If the dialog offers an **Open** button, click it.
 
-If you only see “Apple could not verify…” with no way to proceed, use **Method 1** above.
+If you only see “Apple could not verify…” with **Move to Trash** and **Done** (no **Open**), click **Done** and use **Method 1** above.
 
 **Method 3 — Remove quarantine (Terminal)**
 
@@ -78,7 +92,7 @@ When available, download the latest **`GW2onMac`** release from:
 **https://github.com/Warzuponus/GW2onMac/releases**
 
 1. Open the newest release.
-2. Download **`GW2onMac-0.1.4.dmg`** (or the latest **`GW2onMac-*.dmg`** from [Releases](https://github.com/Warzuponus/GW2onMac/releases)).
+2. Download **`GW2onMac-0.1.5.dmg`** (or the latest **`GW2onMac-*.dmg`** from [Releases](https://github.com/Warzuponus/GW2onMac/releases)).
 3. Open the DMG and drag **GW2onMac** to **Applications**.
 4. Follow [macOS security warning (expected)](#macos-security-warning-expected) above to open the app the first time.
 
@@ -171,7 +185,17 @@ Some users install GPTK via Homebrew’s `game-porting-toolkit` cask. If D3DMeta
 A “prefix” is a Windows-like environment where GW2 runs.
 
 1. In the setup wizard, click **Create Prefix**.
-2. Wait until the **GW2 prefix** step shows a checkmark.
+2. Wait until the **GW2 prefix** step shows a green checkmark.
+
+### What to expect (this can take a minute)
+
+**Create Prefix** runs Wine’s first-time setup (`wineboot`) in the background. A few things are normal:
+
+- **A Terminal or command window may flash or appear behind GW2onMac** — Wine is initializing the prefix. You can ignore it; it should close on its own.
+- **macOS may ask to install Rosetta 2** — Wine runs as x86_64 code on Apple Silicon. If you skipped **Install Rosetta** in Step 2, macOS may pop up its own dialog saying a component is required. Click **Install** (or **Continue**) and wait for Rosetta to finish. The helper window may close and **GW2onMac can look frozen for 30–60 seconds** while Wine finishes — that is normal.
+- **The prefix row may stay unchecked for a bit** — do not click **Create Prefix** again. Wait until the checkmark appears, then click **Refresh** if needed.
+
+If prefix creation fails after several minutes, make sure **Rosetta 2** and **D3DMetal (GPTK)** both show green checkmarks first, then try **Create Prefix** again.
 
 ---
 
@@ -218,9 +242,13 @@ Run ArenaNet’s installer inside the Wine prefix using GW2onMac’s terminal mo
 | “Wine runtime not installed” | Click **Download Runtime** again |
 | “D3DMetal not found” | Copy `D3DMetal.framework` to `lib/external/` (Step 4) |
 | “Create Prefix” fails | Install Rosetta + D3DMetal first |
+| **Create Prefix** seems stuck / app frozen | Wait 1–2 min after any Rosetta install dialog; Wine is still running `wineboot` |
+| Rosetta popup during **Create Prefix** | Click **Install** in the system dialog, or install Rosetta in Step 2 first |
+| “Failed to download Gw2Setup” / HTTP 404 | ArenaNet retired the old `download.guildwars2.com` link — update to GW2onMac **v0.1.5+**, or use **Import…** if you already have GW2 |
 | Game installs but Play is disabled | Click **Refresh** |
 | Very low FPS on 16 GB Mac | Lower character models, shadows, reflections in-game |
-| macOS blocks GW2onMac (“could not verify”) | Expected — **System Settings → Privacy & Security**, scroll down, **Open Anyway** |
+| First launch: “could not verify” dialog | Click **Done** (not **Move to Trash**), then **System Settings → Privacy & Security** → scroll down → **Open Anyway** |
+| macOS blocks GW2onMac (“could not verify”) | Click **Done** on the first dialog, then **Privacy & Security** → scroll down → **Open Anyway** |
 
 ---
 

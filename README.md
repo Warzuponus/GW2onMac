@@ -16,7 +16,7 @@ Open-source Guild Wars 2 launcher for **Apple Silicon Macs** (M1 and newer). GW2
 You do **not** need Xcode, Homebrew, or to compile Wine yourself.
 
 1. **Download GW2onMac** from [GitHub Releases](https://github.com/Warzuponus/GW2onMac/releases)
-2. **Bypass the macOS security warning** — try to open the app once, then **System Settings → Privacy & Security** → scroll down → **Open Anyway** ([details](Docs/INSTALL.md#macos-security-warning-expected))
+2. **Bypass the macOS security warning** — double-click once, click **Done** (not **Move to Trash**), then **System Settings → Privacy & Security** → scroll down → **Open Anyway** ([details](Docs/INSTALL.md#macos-security-warning-expected))
 3. **Open the app** and follow the setup wizard
 4. **Install Rosetta 2** (one click in the app)
 5. **Download the Wine runtime** (one click — ~450 MB, hosted on GitHub)

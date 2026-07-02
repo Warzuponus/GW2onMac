@@ -34,4 +34,17 @@ public enum ReleaseConfiguration {
         }
         return URL(string: "https://github.com/\(githubRepository)/releases/latest/download/GW2onMacWineVersion.plist")!
     }
+
+    /// ArenaNet Gw2Setup-64.exe download URLs (tried in order). Override with `GW2ONMAC_GW2_SETUP_URL`.
+    public static var gw2SetupDownloadURLs: [URL] {
+        if let override = ProcessInfo.processInfo.environment["GW2ONMAC_GW2_SETUP_URL"],
+           let url = URL(string: override) {
+            return [url]
+        }
+        return [
+            // `download.guildwars2.com` returns 404 as of 2026; Lutris/PlayOnLinux use the S3 CDN.
+            URL(string: "https://s3.amazonaws.com/gw2cdn/client/branches/Gw2Setup-64.exe")!,
+            URL(string: "https://gw2cdn.s3.amazonaws.com/client/branches/Gw2Setup-64.exe")!
+        ]
+    }
 }
