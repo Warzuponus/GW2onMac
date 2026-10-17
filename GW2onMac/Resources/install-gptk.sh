@@ -132,6 +132,15 @@ copy_d3dmetal() {
   echo "Copying GPTK external libraries to $(dirname "$DEST")"
   rm -rf "$(dirname "$DEST")"/*
   cp -R "$src_dir/"* "$(dirname "$DEST")/"
+
+  # GPTK's lib/wine holds the D3DMetal d3d11/dxgi/d3d12 DLLs and the .so links to
+  # libd3dshared.dylib. Without them DirectX 11 falls back to wined3d and GW2 fails
+  # with "Unable to initialize 3D output".
+  local wine_src="$src_dir/../wine"
+  [[ -f "$wine_src/x86_64-windows/d3d11.dll" ]] || die "GPTK lib/wine/x86_64-windows not found next to $src_dir."
+  echo "Copying GPTK Wine DLLs to ${LIB_ROOT}/Wine/lib/wine"
+  ditto "$wine_src" "${LIB_ROOT}/Wine/lib/wine"
+  [[ -e "${LIB_ROOT}/Wine/lib/wine/x86_64-unix/d3d11.so" ]] || die "d3d11.so link missing after GPTK install."
 }
 
 SOURCE="${1:-}"

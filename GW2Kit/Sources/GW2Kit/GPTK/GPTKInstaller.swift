@@ -290,9 +290,28 @@ public enum GPTKInstaller {
 
     // MARK: - Install actions
 
+    /// Copies GPTK's `redist/lib/external` and its sibling `redist/lib/wine` into the runtime.
+    /// The `wine` folder holds the D3DMetal-backed d3d11/dxgi/d3d12 DLLs and the `.so` links to
+    /// libd3dshared.dylib; without them DirectX 11 falls back to wined3d and GW2 cannot start.
     private static func copyExternalLibraries(from sourceDir: URL) throws {
-        let destinationRoot = WineRuntimeInstaller.d3dMetalExternalFolder
+        try copyContents(of: sourceDir, to: WineRuntimeInstaller.d3dMetalExternalFolder)
 
+        let wineSource = sourceDir.deletingLastPathComponent().appending(path: "wine")
+        for arch in ["x86_64-windows", "x86_64-unix"] {
+            let archSource = wineSource.appending(path: arch)
+            guard FileManager.default.fileExists(atPath: archSource.path) else {
+                throw GPTKInstallerError.d3dMetalNotFound
+            }
+            try copyContents(of: archSource, to: WineRuntimeInstaller.wineLibFolder.appending(path: arch))
+        }
+
+        guard WineRuntimeInstaller.isBundledD3DMetalComplete() else {
+            throw GPTKInstallerError.d3dMetalNotFound
+        }
+    }
+
+    /// Copies each item in `sourceDir` over the same name in `destinationRoot`, keeping symlinks as symlinks.
+    private static func copyContents(of sourceDir: URL, to destinationRoot: URL) throws {
         try FileManager.default.createDirectory(at: destinationRoot, withIntermediateDirectories: true)
 
         guard let items = try? FileManager.default.contentsOfDirectory(
@@ -305,7 +324,8 @@ public enum GPTKInstaller {
 
         for item in items {
             let destination = destinationRoot.appending(path: item.lastPathComponent)
-            if FileManager.default.fileExists(atPath: destination.path) {
+            // attributesOfItem does not follow symlinks, so dangling links are replaced too.
+            if (try? FileManager.default.attributesOfItem(atPath: destination.path)) != nil {
                 try FileManager.default.removeItem(at: destination)
             }
             do {
@@ -313,10 +333,6 @@ public enum GPTKInstaller {
             } catch {
                 throw GPTKInstallerError.copyFailed(error.localizedDescription)
             }
-        }
-
-        guard WineRuntimeInstaller.isBundledD3DMetalComplete() else {
-            throw GPTKInstallerError.d3dMetalNotFound
         }
     }
 

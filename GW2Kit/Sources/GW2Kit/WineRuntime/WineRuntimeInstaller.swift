@@ -166,13 +166,21 @@ public class WineRuntimeInstaller {
         return legacyPaths.contains { FileManager.default.fileExists(atPath: $0) }
     }
 
-    /// Bundled GPTK layout requires both D3DMetal.framework and libd3dshared.dylib.
+    /// Folder holding Wine's per-architecture DLLs (`x86_64-windows`, `x86_64-unix`).
+    public static var wineLibFolder: URL {
+        libraryFolder.appending(path: "Wine/lib/wine")
+    }
+
+    /// Bundled GPTK layout requires D3DMetal.framework, libd3dshared.dylib, and the
+    /// d3d11.so link that routes Wine's d3d11 to it (stock Wine has no d3d11.so).
     public static func isBundledD3DMetalComplete() -> Bool {
         let external = d3dMetalExternalFolder
         let framework = external.appending(path: "D3DMetal.framework").path
         let libd3dshared = external.appending(path: "libd3dshared.dylib").path
+        let d3d11Unix = wineLibFolder.appending(path: "x86_64-unix/d3d11.so").path
         return FileManager.default.fileExists(atPath: framework)
             && FileManager.default.fileExists(atPath: libd3dshared)
+            && FileManager.default.fileExists(atPath: d3d11Unix)
     }
 
     /// Path to bundled `libd3dshared.dylib` (only when forcing the D3DMetal backend).
