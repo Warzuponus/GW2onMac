@@ -59,7 +59,12 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          name: Wine Runtime ${{ github.ref_name }}
           files: |
             dist/Libraries.tar.gz
             dist/GW2onMacWineVersion.plist
-          generate_release_notes: true
+          make_latest: false
+          body: |
+            Pre-built Wine 11 runtime used by GW2onMac. Players don't need to download this manually —
+            the app fetches it with **Download Runtime**. Get the app from the
+            [latest release](https://github.com/${{ github.repository }}/releases/latest).

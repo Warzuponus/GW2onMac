@@ -27,6 +27,7 @@ if gh release view "$TAG" >/dev/null 2>&1; then
 else
   gh release create "$TAG" \
     --title "Wine Runtime ${VERSION}" \
+    --latest=false \
     --notes "$(cat <<EOF
 Pre-built Wine 11 runtime (CrossOver FOSS sources 26.2.0).
 

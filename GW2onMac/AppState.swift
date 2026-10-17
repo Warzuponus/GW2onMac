@@ -145,8 +145,8 @@ final class AppState: ObservableObject {
             refresh()
         } catch {
             let hint = """
-            Download failed with HTTP status 404. If the GitHub repo is private, use Import Runtime… \
-            with Libraries.tar.gz from the dev machine (AirDrop), or make the repo public again.
+            Download failed with HTTP status 404 — this app version's runtime release may have been removed. \
+            Update GW2onMac from GitHub Releases, or download Libraries.tar.gz and use Import Runtime….
             """
             let message = error.localizedDescription.contains("404")
                 ? "\(error.localizedDescription)\n\n\(hint)"

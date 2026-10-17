@@ -42,7 +42,7 @@ Expect **30–90 minutes** for the compile.
 Installed by `install-x86_64-build-deps.sh`:
 
 ```bash
-brew install pkgconf bison flex mingw-w64 gnutls freetype molten-vk sdl2 libpng jpeg-turbo
+brew install pkgconf bison flex mingw-w64 gnutls freetype molten-vk sdl2 libpng jpeg-turbo winetricks
 ```
 
 Also requires **Xcode Command Line Tools**:
@@ -59,23 +59,41 @@ Libraries/
 │   ├── bin/wine64
 │   ├── lib/
 │   └── share/
-└── GW2onMacWineVersion.plist
+├── GW2onMacWineVersion.plist
+└── TyriaWineVersion.plist      # legacy alias, same content
 ```
 
-Packaged as `dist/Libraries.tar.gz` (~450 MB).
+Packaged as `dist/Libraries.tar.gz` (~450 MB), plus `dist/GW2onMacWineVersion.plist` (uploaded next to the tarball so the app can check for updates without downloading it).
+
+`RUNTIME_VERSION` (default `0.1.0`) is written into the plist — set it to match the release tag.
 
 ## Publishing to GitHub Releases
 
+Currently published: **`runtime-v0.1.2`** (the tag the app downloads). Use the next version for a new runtime.
+
+### From CI
+
 ```bash
-git tag runtime-v0.1.0
-git push origin runtime-v0.1.0
+git tag runtime-v0.1.3
+git push origin runtime-v0.1.3
 ```
 
-The `release-runtime` workflow on GitHub Actions:
+The `release-runtime` workflow on GitHub Actions (allow **~2.5 hours**):
 
 1. Installs x86_64 Homebrew on the macOS runner
-2. Builds Wine
-3. Uploads `Libraries.tar.gz` + `GW2onMacWineVersion.plist` to the release
+2. Builds Wine with `RUNTIME_VERSION` taken from the tag
+3. Uploads `Libraries.tar.gz` + `GW2onMacWineVersion.plist` to the release (not marked *Latest*, so the app release stays the default download)
+
+### From a local build
+
+If you already built `dist/` locally (faster than CI):
+
+```bash
+RUNTIME_VERSION=0.1.3 ./Scripts/build-wine-runtime.sh
+RUNTIME_VERSION=0.1.3 ./Scripts/publish-local-runtime.sh   # needs the gh CLI, logged in
+```
+
+### After publishing
 
 Then bump `runtimeReleaseTag` in `GW2Kit/Sources/GW2Kit/ReleaseConfiguration.swift` and ship an app release — the app only downloads the runtime tag it was built with. Existing users see **Update Runtime** and must re-run **Install GPTK** afterwards (the update replaces `Libraries/`).
 
@@ -113,7 +131,11 @@ First visit to a new zone may stutter while D3DMetal compiles shaders.
 
 ## Local testing without GitHub
 
+Either click **Import Runtime…** in the setup wizard and pick `dist/Libraries.tar.gz`, or point the app's downloader at local files before launching it from Xcode:
+
 ```bash
 export GW2ONMAC_WINE_RUNTIME_URL="file://$(pwd)/dist/Libraries.tar.gz"
 export GW2ONMAC_WINE_VERSION_URL="file://$(pwd)/dist/GW2onMacWineVersion.plist"
 ```
+
+To run the game against a runtime without installing it, set `GW2ONMAC_WINE_LIB` to its `Wine/` directory and run `./Scripts/launch-gw2.sh`.

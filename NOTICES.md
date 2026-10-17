@@ -23,6 +23,13 @@ DirectX 11 translation for Guild Wars 2 requires Apple's D3DMetal libraries from
 
 **GW2onMac does not bundle GPTK.** Users must install it separately under Apple's license terms.
 
+## Bundled helper tools
+
+The app bundle (`GW2onMac.app/Contents/Resources/`) includes two unmodified third-party tools used to install fonts into the Wine prefix:
+
+- **winetricks** (LGPL-2.1-or-later) — https://github.com/Winetricks/winetricks
+- **cabextract** (GPL-3.0-or-later), built by Homebrew — https://www.cabextract.org.uk/ (source: https://www.cabextract.org.uk/#download)
+
 ## SemanticVersion (Apache-2.0)
 
 Swift package: https://github.com/SwiftPackageIndex/SemanticVersion
