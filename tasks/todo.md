@@ -14,7 +14,7 @@
 - [x] Record results and remaining blockers.
 
 ## Working Notes
-- Manual `Scripts/launch-gw2.sh` still works using legacy bundle `com.tyriasilicon.app`.
+- Runtime and prefix resolve independently (`Scripts/resolve-bundle-id.sh` ↔ `AppPaths.swift`): runtime = `com.gw2onmac.app`, prefix = `com.tyriasilicon.app/GW2` until `Scripts/migrate-legacy-prefix.sh --apply` is run.
 - Current app launches installed `Gw2-64.exe` via `GW2ShellLauncher`, but `Gw2Setup-64.exe` still uses generic `Wine.runProgram`.
 - Avoid deleting `dist/Libraries.tar.gz`, `build/wine`, Appli# GW2onMac Reset Plan
 

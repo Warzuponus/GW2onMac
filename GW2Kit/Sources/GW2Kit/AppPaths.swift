@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// Application Support and Container paths, with legacy TyriaSilicon migration.
+/// Application Support (runtime) and Container (prefix) paths, with legacy TyriaSilicon fallback.
 public enum AppPaths {
     public static let bundleIdentifier = "com.gw2onmac.app"
     public static let legacyBundleIdentifier = "com.tyriasilicon.app"
@@ -31,6 +31,10 @@ public enum AppPaths {
             .appending(path: legacyBundleIdentifier)
     }
 
+    // Runtime and prefix resolve independently: a migrated TyriaSilicon install can have
+    // them under different bundle IDs. Mirrors Scripts/resolve-bundle-id.sh — keep in sync.
+
+    /// New ID if its runtime exists, else legacy if that exists, else new.
     private static func resolveApplicationSupport() -> URL {
         let home = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         let newPath = home.appending(path: bundleIdentifier)
@@ -41,27 +45,34 @@ public enum AppPaths {
         return newPath
     }
 
+    /// Prefers a prefix with GW2 installed, then any GW2 prefix (new before legacy), else new.
     private static func resolveContainer() -> URL {
         let newPath = FileManager.default.homeDirectoryForCurrentUser
             .appending(path: "Library/Containers")
             .appending(path: bundleIdentifier)
-        let legacyPath = legacyContainer
+        let candidates = [newPath, legacyContainer]
 
-        if FileManager.default.fileExists(atPath: legacyPath.appending(path: "GW2").path) {
-            return legacyPath
+        if let installed = candidates.first(where: { hasGW2Installed(in: $0) }) {
+            return installed
         }
-        if FileManager.default.fileExists(atPath: newPath.appending(path: "GW2").path) {
-            return newPath
-        }
-        if FileManager.default.fileExists(atPath: legacyPath.path) {
-            return legacyPath
+        if let prefix = candidates.first(where: { hasPrefix(in: $0) }) {
+            return prefix
         }
         return newPath
+    }
+
+    private static func hasPrefix(in container: URL) -> Bool {
+        FileManager.default.fileExists(atPath: container.appending(path: "GW2").path(percentEncoded: false))
+    }
+
+    private static func hasGW2Installed(in container: URL) -> Bool {
+        let exe = container.appending(path: "GW2/drive_c/Program Files/Guild Wars 2/Gw2-64.exe")
+        return FileManager.default.fileExists(atPath: exe.path(percentEncoded: false))
     }
 
     private static func hasRuntime(at appSupport: URL) -> Bool {
         let wine64 = appSupport
             .appending(path: "Libraries/Wine/bin/wine64")
-        return FileManager.default.fileExists(atPath: wine64.path)
+        return FileManager.default.isExecutableFile(atPath: wine64.path(percentEncoded: false))
     }
 }

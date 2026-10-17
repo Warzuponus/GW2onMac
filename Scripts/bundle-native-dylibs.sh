@@ -7,8 +7,13 @@
 #
 set -euo pipefail
 
-BUNDLE_ID="${TYRIA_BUNDLE_ID:-com.tyriasilicon.app}"
-LIB="${1:-$HOME/Library/Application Support/$BUNDLE_ID/Libraries/Wine}"
+if [[ -n "${1:-}" ]]; then
+  LIB="$1"
+else
+  # shellcheck source=resolve-bundle-id.sh
+  source "$(cd "$(dirname "$0")" && pwd)/resolve-bundle-id.sh"
+  LIB="$(resolve_wine_lib)"
+fi
 NATIVE="$LIB/lib/native"
 
 FREETYPE="${FREETYPE:-/usr/local/opt/freetype/lib/libfreetype.6.dylib}"

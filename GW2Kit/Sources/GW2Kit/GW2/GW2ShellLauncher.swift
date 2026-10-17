@@ -31,11 +31,12 @@ public enum GW2ShellLauncher {
             throw GW2ShellLauncherError.scriptMissing
         }
 
-        let bundleID = applicationSupportBundleID(for: bottle)
+        // Pass the exact runtime and prefix the app resolved so the script cannot pick different ones.
+        let wineLib = WineRuntimeInstaller.libraryFolder.appending(path: "Wine").path(percentEncoded: false)
 
         var env = minimalLaunchEnvironment()
-        env["GW2ONMAC_BUNDLE_ID"] = bundleID
-        env["WINEPREFIX"] = bottle.url.path
+        env["GW2ONMAC_WINE_LIB"] = wineLib
+        env["WINEPREFIX"] = bottle.url.path(percentEncoded: false)
         if let executableURL {
             env["GW2ONMAC_EXECUTABLE"] = executableURL.path(percentEncoded: false)
         }
@@ -50,7 +51,7 @@ public enum GW2ShellLauncher {
         process.arguments = args
         process.environment = env
 
-        Logger.gw2Kit.info("Launching GW2 via shell script (bundle=\(bundleID, privacy: .public))")
+        Logger.gw2Kit.info("Launching GW2 via shell script (runtime=\(wineLib, privacy: .public))")
 
         try process.run()
     }
@@ -72,15 +73,6 @@ public enum GW2ShellLauncher {
             return devPath
         }
         return nil
-    }
-
-    /// Resolve which Application Support folder owns the runtime for this bottle.
-    private static func applicationSupportBundleID(for bottle: Bottle) -> String {
-        let path = bottle.url.path
-        if path.contains(AppPaths.legacyBundleIdentifier) {
-            return AppPaths.legacyBundleIdentifier
-        }
-        return AppPaths.bundleIdentifier
     }
 
     /// Avoid inheriting GUI-app or shell env (e.g. leaked CrossOver CX_* vars).

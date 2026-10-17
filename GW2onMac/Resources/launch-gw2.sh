@@ -9,8 +9,9 @@
 # From app:   bundled in GW2onMac.app/Contents/Resources/
 #
 # Env (optional):
-#   GW2ONMAC_BUNDLE_ID — force Application Support bundle id
-#   WINEPREFIX         — override prefix path
+#   GW2ONMAC_BUNDLE_ID — force one bundle id for runtime and prefix
+#   GW2ONMAC_WINE_LIB  — override Wine runtime path (the app passes this)
+#   WINEPREFIX         — override prefix path (the app passes this)
 #
 set -euo pipefail
 
@@ -31,9 +32,8 @@ else
   BUNDLE_NATIVE="$ROOT/Scripts/bundle-native-dylibs.sh"
 fi
 
-BUNDLE_ID="$(resolve_bundle_id)"
-PREFIX="${WINEPREFIX:-$HOME/Library/Containers/$BUNDLE_ID/GW2}"
-LIB="$HOME/Library/Application Support/$BUNDLE_ID/Libraries/Wine"
+PREFIX="$(resolve_gw2_prefix)"
+LIB="$(resolve_wine_lib)"
 WINE="$LIB/bin/wine64"
 GW2="${GW2ONMAC_EXECUTABLE:-$PREFIX/drive_c/Program Files/Guild Wars 2/Gw2-64.exe}"
 ARGS="${*:-}"
@@ -70,7 +70,7 @@ wine() {
     "$WINE" "$@"
 }
 
-echo "Launching $(basename "$GW2") (bundle=$BUNDLE_ID)"
+echo "Launching $(basename "$GW2") (runtime=$LIB, prefix=$PREFIX)"
 if [[ -n "$ARGS" ]]; then
   wine start /unix "$GW2" $ARGS
 else

@@ -7,9 +7,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=resolve-bundle-id.sh
 source "$ROOT/Scripts/resolve-bundle-id.sh"
-BUNDLE_ID="$(resolve_bundle_id)"
-PREFIX="${WINEPREFIX:-$HOME/Library/Containers/$BUNDLE_ID/GW2}"
-LIB="$HOME/Library/Application Support/$BUNDLE_ID/Libraries/Wine"
+PREFIX="$(resolve_gw2_prefix)"
+LIB="$(resolve_wine_lib)"
 WINE="$LIB/bin/wine64"
 
 export WINEPREFIX="$PREFIX"
