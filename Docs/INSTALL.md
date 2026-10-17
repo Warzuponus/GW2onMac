@@ -12,7 +12,7 @@ This guide is for **players** who want to run Guild Wars 2 on an **Apple Silicon
 |------|-----|
 | Apple Silicon Mac | GW2onMac is built for M-series chips only |
 | macOS 14 (Sonoma) or newer | Required by the app |
-| ~50 GB free disk space | Guild Wars 2 install + Wine runtime |
+| ~100 GB free disk space | Guild Wars 2 (~80 GB) + Wine runtime + prefix |
 | ArenaNet account | You install GW2 through ArenaNet’s installer |
 | Apple Developer account (free) | Needed to download Apple’s Game Porting Toolkit |
 
@@ -87,12 +87,12 @@ The app is open source — you can inspect the code in this repository. Unsigned
 
 ### Option A: Download a release (recommended)
 
-When available, download the latest **`GW2onMac`** release from:
+Download the latest release from:
 
-**https://github.com/Warzuponus/GW2onMac/releases**
+**https://github.com/Warzuponus/GW2onMac/releases/latest**
 
-1. Open the newest release.
-2. Download **`GW2onMac-0.1.12.dmg`** (or the latest **`GW2onMac-*.dmg`** from [Releases](https://github.com/Warzuponus/GW2onMac/releases)).
+1. Under **Assets**, download **`GW2onMac-<version>.dmg`**.
+2. *(Optional)* Check the download against the `.sha256` file next to it: `shasum -a 256 ~/Downloads/GW2onMac-*.dmg`
 3. Open the DMG and drag **GW2onMac** to **Applications**.
 4. Follow [macOS security warning (expected)](#macos-security-warning-expected) above to open the app the first time.
 
@@ -132,6 +132,8 @@ The app stores the runtime at:
 
 `~/Library/Application Support/com.gw2onmac.app/Libraries/`
 
+Already have `Libraries.tar.gz` (e.g. downloaded on another Mac)? Click **Import Runtime…** and select it instead.
+
 ---
 
 ## Step 4 — Install Apple Game Porting Toolkit (D3DMetal)
@@ -153,24 +155,26 @@ Guild Wars 2 uses **DirectX 11**. On Mac, that requires Apple’s **D3DMetal** l
 4. Enter your Mac password when prompted — GW2onMac installs **Metal Shader Converter** and copies **D3DMetal.framework** into the Wine runtime.
 5. The step should show a green checkmark when finished.
 
-GW2onMac looks for GPTK on mounted volumes (e.g. `/Volumes/Game Porting Toolkit`) and in **Downloads**. This copies **D3DMetal.framework** and **libd3dshared.dylib** (both required for DirectX 11).
+GW2onMac looks for GPTK on mounted volumes (e.g. `/Volumes/Game Porting Toolkit`) and in **Downloads**. It copies **D3DMetal.framework**, **libd3dshared.dylib**, and GPTK’s D3DMetal Wine DLLs (`lib/wine/x86_64-windows` and `x86_64-unix`) into the runtime — all are required for DirectX 11.
+
+> **Re-run Install GPTK after Update Runtime.** Updating the runtime replaces the `Libraries` folder, including the GPTK files. The GPTK row turns unchecked again; click **Install GPTK** once more.
 
 ### 4c. Manual install (advanced)
 
-If you prefer to install by hand, see the table below. You only need **Metal Shader Converter** and **D3DMetal.framework** — not the full evaluation Wine environment.
+If you prefer to install by hand, see the table below. You only need **Metal Shader Converter** and the GPTK `redist/lib` files — not the full evaluation Wine environment.
 
 | Item in the GPTK folder | Needed for GW2onMac? |
 |-------------------------|----------------------|
-| **Evaluation environment for Windows games … .dmg** | **Yes** — contains `D3DMetal.framework` at `redist/lib/external/` |
+| **Evaluation environment for Windows games … .dmg** | **Yes** — contains `redist/lib/external/` (D3DMetal) and `redist/lib/wine/` (Wine DLLs) |
 | **Metal Shader Converter … .pkg** | **Yes (recommended)** |
 | Mac Remote Developer Tools … .pkg | No |
 | `gptk-sample`, `metal-cpp` | No |
 
-Copy destination:
+Copy `redist/lib/external/` and `redist/lib/wine/x86_64-{windows,unix}/` into the matching folders under:
 
-`~/Library/Application Support/com.gw2onmac.app/Libraries/Wine/lib/external/D3DMetal.framework`
+`~/Library/Application Support/com.gw2onmac.app/Libraries/Wine/lib/`
 
-You can also run the bundled helper script from Terminal:
+The easier way is the bundled helper script, which does exactly that:
 
 ```bash
 "/Applications/GW2onMac.app/Contents/Resources/install-gptk.sh"
@@ -233,7 +237,11 @@ Run ArenaNet’s installer inside the Wine prefix using GW2onMac’s terminal mo
 
 - Click **Repair launcher** (clears a stale lock file and refreshes display settings).
 - Try lowering in-game graphics settings (see [RUNTIME.md](RUNTIME.md#performance)).
-- Hold **Shift** when clicking Play to open in Terminal and see error output.
+- Run the same launch script that **Play** uses from Terminal to see its error output:
+
+  ```bash
+  bash "/Applications/GW2onMac.app/Contents/Resources/launch-gw2.sh"
+  ```
 
 ---
 
@@ -241,6 +249,20 @@ Run ArenaNet’s installer inside the Wine prefix using GW2onMac’s terminal mo
 
 | Problem | What to try |
 |---------|-------------|
+| “Wine runtime not installed” | Click **Download Runtime** again |
+| “Unable to initialize 3D output” / DirectX 11 error | Click **Install GPTK** again (v1.1.0+ also installs GPTK’s Wine DLLs, which older versions skipped). Make sure the D3DMetal row is green |
+| D3DMetal row unchecked after updating GW2onMac or the runtime | Expected — click **Install GPTK** again (keep the GPTK `.dmg` in Downloads or mounted) |
+| “D3DMetal not found” | Mount the GPTK `.dmg`, then **Install GPTK** or **Choose File…** |
+| Launcher UI garbled / missing text | Click **Repair launcher**, then **Play** again |
+| **Create Prefix** fails | Install Rosetta and GPTK first (both rows green), then try again |
+| **Create Prefix** seems stuck / app frozen | Wait 1–2 min after any Rosetta dialog; Wine is still running `wineboot` |
+| “Failed to download Gw2Setup” / HTTP 404 | Use **Import…** with an existing GW2 folder, or download `Gw2Setup-64.exe` from ArenaNet and report the issue |
+| Game installs but Play is disabled | Click **Refresh** |
+| Very low FPS on 16 GB Mac | Lower character models, shadows, reflections in-game ([tips](RUNTIME.md#in-game-settings-16-gb-macs)) |
+| macOS blocks GW2onMac (“could not verify”) | Click **Done** (not **Move to Trash**), then **Privacy & Security** → scroll down → **Open Anyway** |
+| Something else | Run the launch script Play uses from Terminal to see its errors (below), and [open an issue](https://github.com/Warzuponus/GW2onMac/issues) with the output |
+
+---------|-------------|
 | “Wine runtime not installed” | Click **Download Runtime** again |
 | Launcher UI garbled / missing text / wrong click targets | Ensure **DirectX 11 in-game** is **off** (default in v0.1.11). Or launch via `./Scripts/launch-gw2.sh` — matches original TyriaSilicon dev scripts (no CrossOver env vars) |
 | “Unable to initialize 3D output” / DirectX 11 error **in-game** (after login) | Turn **on** “DirectX 11 in-game”, or run `GW2ONMAC_D3DMETAL=1 ./Scripts/launch-gw2.sh` |
@@ -255,6 +277,27 @@ Run ArenaNet’s installer inside the Wine prefix using GW2onMac’s terminal mo
 | Very low FPS on 16 GB Mac | Lower character models, shadows, reflections in-game |
 | First launch: “could not verify” dialog | Click **Done** (not **Move to Trash**), then **System Settings → Privacy & Security** → scroll down → **Open Anyway** |
 | macOS blocks GW2onMac (“could not verify”) | Click **Done** on the first dialog, then **Privacy & Security** → scroll down → **Open Anyway** |
+
+---
+
+## Where GW2onMac keeps its files
+
+| What | Location |
+|------|----------|
+| Wine runtime + GPTK files | `~/Library/Application Support/com.gw2onmac.app/Libraries/` |
+| GW2 prefix (includes the game install) | `~/Library/Containers/com.gw2onmac.app/GW2/` |
+| Logs | `~/Library/Logs/com.gw2onmac.app/` |
+
+Upgraded from the old **TyriaSilicon** builds? GW2onMac finds your existing runtime and prefix under `com.tyriasilicon.app` automatically. To move the prefix to the new location (instant, same-disk move — nothing is copied or deleted), quit the game and run `./Scripts/migrate-legacy-prefix.sh --apply` from a clone of this repo.
+
+### Updating
+
+Download the newer DMG and drag GW2onMac to **Applications**, replacing the old copy. Your runtime, prefix, and game install are kept. If the D3DMetal row turns unchecked, click **Install GPTK** again.
+
+### Uninstalling
+
+1. Drag **GW2onMac** from Applications to the Trash.
+2. To free the disk space too, delete the two folders above (`Libraries` and `GW2`). **The `GW2` folder contains your game install (~80 GB).**
 
 ---
 

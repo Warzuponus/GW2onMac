@@ -1,15 +1,13 @@
 # GW2onMac
 
-> **Private beta — not ready for general use.** The maintainers are rebuilding from a known-good local script workflow. Do not share download links until a public release is announced.
+Open-source Guild Wars 2 launcher for **Apple Silicon Macs** (M1 and newer). GW2onMac uses a pre-built **Wine 11** runtime and Apple’s **Game Porting Toolkit (D3DMetal)** to run GW2 with DirectX 11 on macOS.
 
-Open-source Guild Wars 2 launcher for **Apple Silicon Macs** (M1 and newer). GW2onMac uses a pre-built **Wine 11** runtime and Apple’s **Game Porting Toolkit (D3DMetal)** to run GW2 on macOS.
-
-> **Unsupported by ArenaNet.** Community-maintained. Not affiliated with ArenaNet or NCSOFT.  
+> **Community project, early release.** Not affiliated with or supported by ArenaNet or NCSOFT. Expect rough edges — please [open an issue](https://github.com/Warzuponus/GW2onMac/issues) if something breaks.
 > **Intel Macs are not supported.**
 
 **Install guide for players:** [Docs/INSTALL.md](Docs/INSTALL.md)
 
-> **macOS security warning:** GW2onMac is **not code-signed** (no paid Apple Developer certificate). macOS will show an “unidentified developer” warning on first launch — **this is expected and safe** if you downloaded from [our GitHub Releases](https://github.com/Warzuponus/GW2onMac/releases). See [INSTALL.md — macOS security warning](Docs/INSTALL.md#macos-security-warning-expected).
+> **macOS security warning:** GW2onMac is **not code-signed** (no paid Apple Developer certificate). macOS will show a “could not verify” warning on first launch — this is expected if you downloaded from [our GitHub Releases](https://github.com/Warzuponus/GW2onMac/releases). See [INSTALL.md — macOS security warning](Docs/INSTALL.md#macos-security-warning-expected).
 
 ---
 
@@ -17,55 +15,37 @@ Open-source Guild Wars 2 launcher for **Apple Silicon Macs** (M1 and newer). GW2
 
 You do **not** need Xcode, Homebrew, or to compile Wine yourself.
 
-1. **Download GW2onMac** from [GitHub Releases](https://github.com/Warzuponus/GW2onMac/releases)
-2. **Bypass the macOS security warning** — double-click once, click **Done** (not **Move to Trash**), then **System Settings → Privacy & Security** → scroll down → **Open Anyway** ([details](Docs/INSTALL.md#macos-security-warning-expected))
-3. **Open the app** and follow the setup wizard
-4. **Install Rosetta 2** (one click in the app)
-5. **Download the Wine runtime** (one click — ~450 MB, hosted on GitHub)
-6. **Download Game Porting Toolkit 4.x from Apple**, then click **Install GPTK** in the setup wizard (see [INSTALL.md](Docs/INSTALL.md#step-4--install-apple-game-porting-toolkit-d3dmetal))
-7. **Create Prefix** → **Install GW2** → **Play**
+1. **Download `GW2onMac-<version>.dmg`** from the [latest release](https://github.com/Warzuponus/GW2onMac/releases/latest) and drag the app to **Applications**
+2. **Get past the macOS security warning** — click **Done** (not **Move to Trash**), then **System Settings → Privacy & Security → Open Anyway** ([details](Docs/INSTALL.md#macos-security-warning-expected))
+3. **Open the app** and follow the setup wizard:
+   1. **Install Rosetta 2** (one click)
+   2. **Download Runtime** (~450 MB from GitHub)
+   3. **Install GPTK** — download Game Porting Toolkit from Apple first ([how](Docs/INSTALL.md#step-4--install-apple-game-porting-toolkit-d3dmetal))
+   4. **Create Prefix** → **Install GW2** (or **Import…** an existing install)
+4. Click **Play**
 
-Full step-by-step instructions with links: **[Docs/INSTALL.md](Docs/INSTALL.md)**
+Full step-by-step instructions: **[Docs/INSTALL.md](Docs/INSTALL.md)**
 
 ### Requirements
 
 - Apple Silicon Mac (M-series)
 - macOS Sonoma 14.0 or newer
-- ~50 GB free disk space (game + runtime)
-- Free Apple Developer account (for GPTK download)
-- ArenaNet account (for Guild Wars 2)
+- ~100 GB free disk space (Guild Wars 2 is ~80 GB, plus runtime and prefix)
+- Free Apple Developer account (to download GPTK)
+- ArenaNet account
 
 ---
 
-## Pre-built downloads vs building from source
+## What you download, and from where
 
-GW2onMac is designed so **players download pre-compiled artifacts** instead of building anything locally.
+| Component | Where it comes from |
+|-----------|---------------------|
+| **GW2onMac app** | [GitHub Releases](https://github.com/Warzuponus/GW2onMac/releases) (`GW2onMac-*.dmg`, unsigned, with SHA-256 checksum) |
+| **Wine runtime** (`Libraries.tar.gz`) | In-app **Download Runtime**, from the `runtime-v*` GitHub release — built from source in CI |
+| **D3DMetal (GPTK)** | You download it from [Apple](https://developer.apple.com/games/game-porting-toolkit/); the app installs it with one click |
+| **Guild Wars 2** | ArenaNet’s installer, via in-app **Install GW2** |
 
-| Component | Pre-built? | Where users get it |
-|-----------|------------|-------------------|
-| **Wine runtime** (`Libraries.tar.gz`) | Yes | In-app **Download Runtime** from [GitHub Releases](https://github.com/Warzuponus/GW2onMac/releases) |
-| **GW2onMac app** | Yes | GitHub Releases (`GW2onMac-*.dmg`) — unsigned |
-| **D3DMetal (GPTK)** | Download from Apple; one-click install in app | [Apple Developer](https://developer.apple.com/games/game-porting-toolkit/) |
-| **Guild Wars 2** | No — user must install | ArenaNet via in-app **Install GW2** |
-
-### Why not bundle everything?
-
-- **D3DMetal** is Apple proprietary — we legally cannot ship it inside GW2onMac.
-- **Guild Wars 2** is ArenaNet’s game — users install it with ArenaNet’s installer.
-- **Wine runtime** *can* be pre-built and hosted (LGPL source available in this repo). That is what the `runtime-v*` GitHub releases provide.
-
-### Downsides of pre-built releases (and how we handle them)
-
-| Concern | Impact | Mitigation |
-|---------|--------|------------|
-| Large download (~450 MB runtime) | Slow on slow connections | In-app downloader with progress; host on GitHub Releases CDN |
-| macOS Gatekeeper | “Unidentified developer” warning — **expected** | GW2onMac is unsigned; see [INSTALL.md](Docs/INSTALL.md#macos-security-warning-expected) |
-| Trust | Users must trust release artifacts | Open source, reproducible CI builds, checksums in release notes |
-| GPTK install | User downloads from Apple; app auto-installs D3DMetal | **Install GPTK** button in setup wizard |
-| Updates | Old runtimes may break | In-app **Update Runtime** when a newer release is published |
-| GPL/LGPL compliance | Must offer source | This repo + CrossOver FOSS source links in [NOTICES.md](NOTICES.md) |
-
-**Bottom line:** Requiring users to compile Wine locally would exclude most players. Pre-built runtime + app releases are the right model; the only manual GPTK step is downloading Apple's disk image (license requirement).
+**Why not bundle everything?** D3DMetal is Apple proprietary and can’t be redistributed, and Guild Wars 2 belongs to ArenaNet. The Wine runtime is LGPL and built from CodeWeavers’ published sources in this repo’s CI, so we host it for you.
 
 ---
 
@@ -77,39 +57,40 @@ GW2onMac is designed so **players download pre-compiled artifacts** instead of b
 git clone https://github.com/Warzuponus/GW2onMac.git
 cd GW2onMac
 open GW2onMac.xcodeproj
-# Set Development Team, then Build & Run
+# Build & Run (signs to run locally; set a Development Team if you want)
 ```
+
+`swift build --package-path GW2Kit` builds the core package on its own.
+
+### Run GW2 from the command line
+
+The app launches the game through the same script you can run by hand:
+
+```bash
+./Scripts/launch-gw2.sh
+```
+
+It finds the Wine runtime and the GW2 prefix on its own. Override with `GW2ONMAC_WINE_LIB` (runtime directory) and `WINEPREFIX` (prefix directory).
 
 ### Build the Wine runtime locally (optional)
 
-Only needed if you are hacking on Wine or testing before a release. On Apple Silicon:
+Only needed if you are hacking on Wine. On Apple Silicon:
 
 ```bash
 ./Scripts/install-x86_64-build-deps.sh   # once — x86_64 Homebrew at /usr/local
 ./Scripts/build-wine-runtime.sh          # 30–90 minutes
 ```
 
-Output: `dist/Libraries.tar.gz` + `dist/GW2onMacWineVersion.plist`
+Output: `dist/Libraries.tar.gz` + `dist/GW2onMacWineVersion.plist`. See [Docs/RUNTIME.md](Docs/RUNTIME.md).
 
-See [Docs/RUNTIME.md](Docs/RUNTIME.md) for build troubleshooting.
-
-### Publish an app release (maintainers)
+### Publish releases (maintainers)
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v1.1.0 && git push origin v1.1.0                  # app → GW2onMac-1.1.0.dmg
+git tag runtime-v0.1.3 && git push origin runtime-v0.1.3  # Wine runtime → Libraries.tar.gz
 ```
 
-GitHub Actions builds `GW2onMac-<version>.dmg` and attaches it to the release (unsigned).
-
-### Publish a runtime release (maintainers)
-
-```bash
-git tag runtime-v0.1.0
-git push origin runtime-v0.1.0
-```
-
-GitHub Actions builds and attaches `Libraries.tar.gz` to the release. Users download it through the app automatically.
+The app release stamps the tag’s version into the app. After publishing a new runtime, bump `runtimeReleaseTag` in `GW2Kit/Sources/GW2Kit/ReleaseConfiguration.swift` so the app downloads it.
 
 ---
 
@@ -118,11 +99,12 @@ GitHub Actions builds and attaches `Libraries.tar.gz` to the release. Users down
 ```
 GW2onMac/
 ├── GW2Kit/                 # Swift package (Wine launcher core)
-├── GW2onMac/               # SwiftUI app
-├── Scripts/                # Wine build + prefix helpers
+├── GW2onMac/               # SwiftUI app (+ bundled scripts in Resources/)
+├── Scripts/                # Launch, prefix, GPTK and Wine build helpers
 ├── Docs/
 │   ├── INSTALL.md          # Player installation guide
-│   └── RUNTIME.md          # Wine runtime build guide
+│   ├── RUNTIME.md          # Wine runtime build guide
+│   └── CODESIGNING.md      # Optional signing / notarization
 └── .github/workflows/      # CI + release automation
 ```
 
@@ -132,7 +114,7 @@ GW2onMac/
 - DirectX 11 via D3DMetal
 - Performance tuning for Apple Silicon (msync, Retina off, AVX under Rosetta)
 
-See [Docs/RUNTIME.md](Docs/RUNTIME.md#performance) for in-game graphics tips on 16 GB Macs.
+See [Docs/RUNTIME.md](Docs/RUNTIME.md#performance-defaults) for in-game graphics tips on 16 GB Macs.
 
 ## License
 

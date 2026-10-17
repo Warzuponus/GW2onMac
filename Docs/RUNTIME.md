@@ -6,7 +6,7 @@ Players should use the in-app **Download Runtime** button — see [INSTALL.md](I
 
 ---
 
-## What is TyriaWine / the GW2onMac runtime?
+## What is the GW2onMac runtime?
 
 A custom Wine bundle built from CodeWeavers' LGPL CrossOver source archives (Wine 11 lineage). We compile from source; we do **not** redistribute commercial CrossOver binaries.
 
@@ -77,11 +77,11 @@ The `release-runtime` workflow on GitHub Actions:
 2. Builds Wine
 3. Uploads `Libraries.tar.gz` + `GW2onMacWineVersion.plist` to the release
 
-Users download via the in-app **Download Runtime** button (`Warzuponus/GW2onMac` releases).
+Then bump `runtimeReleaseTag` in `GW2Kit/Sources/GW2Kit/ReleaseConfiguration.swift` and ship an app release — the app only downloads the runtime tag it was built with. Existing users see **Update Runtime** and must re-run **Install GPTK** afterwards (the update replaces `Libraries/`).
 
 ## Apple GPTK / D3DMetal
 
-The runtime provides Wine + winemac. **DirectX 11** requires Apple's D3DMetal — users install GPTK separately. We cannot redistribute D3DMetal. See [INSTALL.md](INSTALL.md#step-4--install-apple-game-porting-toolkit-d3dmetal).
+The runtime provides Wine + winemac. **DirectX 11** requires Apple's D3DMetal — users install GPTK separately, and the app's **Install GPTK** copies GPTK's `redist/lib/external/` and `redist/lib/wine/x86_64-{windows,unix}/` into the runtime. We cannot redistribute D3DMetal. See [INSTALL.md](INSTALL.md#step-4--install-apple-game-porting-toolkit-d3dmetal).
 
 ## Known build issues
 
